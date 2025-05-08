@@ -24,9 +24,17 @@ export const createService = ({
     const servicesDir    = path.join(projectRoot, 'src', 'services', domain);
     let serviceTpl: string;
     if (__dirname.includes('dist')) {
-      serviceTpl = path.join(projectRoot, '@aguayodevs-utilities', 'frontforge', 'templates', 'backend', 'service', 'service.ts.tpl');
+      // En producción, __dirname es algo como .../node_modules/@aguayodevs-utilities/frontforge/dist/tasks/express/service
+      // Necesitamos subir 3 niveles para llegar a .../node_modules/@aguayodevs-utilities/frontforge/dist/
+      // Y luego ir a templates/backend/service/service.ts.tpl
+      serviceTpl = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'service.ts.tpl');
     } else {
-      serviceTpl = path.join(projectRoot, '@aguayodevs-utilities', 'frontforge', 'frontForge', 'templates', 'backend', 'service', 'service.ts.tpl');
+      // En desarrollo, __dirname es algo como .../frontforge/src/tasks/express/service
+      // projectRoot es .../frontforge
+      // La ruta original era projectRoot + framework/frontForge/templates... lo cual es incorrecto.
+      // Debería ser relativa a __dirname o usar una ruta absoluta al proyecto si es necesario.
+      // Por ahora, asumimos que en desarrollo la estructura es src/templates
+      serviceTpl = path.join(projectRoot, 'templates', 'backend', 'service', 'service.ts.tpl');
     }
 
     /* ───────── paths de archivo ───────── */

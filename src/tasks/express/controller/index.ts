@@ -25,9 +25,17 @@ export const createController = ({
     console.log("WTF is going", {projectRoot, controllersDir, genericTokenDir, servicesDir});
     let controllerTpl: string;
     if (__dirname.includes('dist')) {
-      controllerTpl = path.join(projectRoot, '@aguayodevs-utilities', 'frontforge', 'templates', 'backend', 'controller', 'controller.ts.tpl');
+      // En producción, __dirname es algo como .../node_modules/@aguayodevs-utilities/frontforge/dist/tasks/express/controller
+      // Necesitamos subir 3 niveles para llegar a .../node_modules/@aguayodevs-utilities/frontforge/dist/
+      // Y luego ir a templates/backend/controller/controller.ts.tpl
+      controllerTpl = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'controller', 'controller.ts.tpl');
     } else {
-      controllerTpl = path.join(projectRoot, '@aguayodevs-utilities', 'frontForge', 'templates', 'backend', 'controller', 'controller.ts.tpl');
+      // En desarrollo, __dirname es algo como .../frontforge/src/tasks/express/controller
+      // projectRoot es .../frontforge
+      // La ruta original era projectRoot + framework/frontForge/templates... lo cual es incorrecto.
+      // Debería ser relativa a __dirname o usar una ruta absoluta al proyecto si es necesario.
+      // Por ahora, asumimos que en desarrollo la estructura es src/templates
+       controllerTpl = path.join(projectRoot, 'templates', 'backend', 'controller', 'controller.ts.tpl');
     }
 
     /* ───────── paths de archivo ───────── */
