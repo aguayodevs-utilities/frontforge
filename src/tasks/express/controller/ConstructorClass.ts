@@ -12,15 +12,12 @@ export class ConstructorClass {
     private feature: string,
     private constructorType: TconstructorTypeController = 'byRole',
   ) {
-    this.constructorBasePath = path.join(
-      this.projectRoot,
-      'framework',
-      'frontForge',
-      'templates',
-      'backend',
-      'controller',
-      'constructors',
-    );
+    // Ajustar ruta constructorBasePath para producción y desarrollo
+    if (__dirname.includes('dist')) {
+      this.constructorBasePath = path.join(__dirname, '..', '..', 'templates', 'backend', 'controller', 'constructors');
+    } else {
+      this.constructorBasePath = path.join(this.projectRoot, 'framework', 'frontForge', 'templates', 'backend', 'controller', 'constructors');
+    }
   }
 
   public getCodeConstructor(): string {

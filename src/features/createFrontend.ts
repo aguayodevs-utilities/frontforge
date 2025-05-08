@@ -39,7 +39,11 @@ export async function createFrontend(
 
 
   /* 1️⃣ Copiar plantilla base */
-  const templatesDir = path.resolve(__dirname, '..', '..', 'templates', 'frontend');
+  // Ajustar ruta templatesDir para producción y desarrollo
+  let templatesDir = path.resolve(__dirname, '..', '..', 'templates', 'frontend');
+  if (__dirname.includes('dist')) {
+    templatesDir = path.resolve(__dirname, '..', 'templates', 'frontend');
+  }
   await templateCopier(templatesDir, projectFullPath);
 
   /* 2️⃣ Ajustar vite.config.ts */
