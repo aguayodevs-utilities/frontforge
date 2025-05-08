@@ -1,0 +1,1 @@
+{"version":3,"file":"copyBackendStubs.d.ts","sourceRoot":"","sources":["../../../src/tasks/express/copyBackendStubs.ts"],"names":[],"mappings":"AAIA,iEAAiE;AACjE,wBAAsB,gBAAgB,CACpC,EAAC,MAAM,EAAE,KAAK,EAAC,EAAE;IAAC,MAAM,EAAE,MAAM,CAAC;IAAC,KAAK,EAAE;QAAE,KAAK,EAAE,MAAM,CAAC;QAAC,MAAM,EAAE,MAAM,CAAA;KAAE,CAAA;CAAC,iBAqB5E"}

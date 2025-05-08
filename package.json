@@ -1,0 +1,48 @@
+{
+  "name": "@aguayodevs-utilities/frontforge",
+  "version": "1.0.7",
+  "description": "CLI y librería para generar y compilar micro-frontends (Preact) con servidor de express para app monorepositorio.",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "frontforge": "dist/cli.js"
+  },
+  "scripts": {
+    "build:ts": "tsc --build tsconfig.build.json",
+    "copy:templates": "cpx \"templates/**/*\" dist/templates",
+    "build": "npm run build:ts && npm run copy:templates",
+    "lint": "eslint \"src/**/*.{ts,js}\"",
+    "publish-frontforge": "npm run build && npm publish --access=public"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": "Miguel Aguayo",
+  "license": "ISC",
+  "keywords": [
+    "aguayodevs",
+    "frontforge",
+    "preact",
+    "express"
+  ],
+  "dependencies": {
+    "@aguayodevs-utilities/preact-shared": "^1.0.1",
+    "change-case": "^5.4.4",
+    "execa": "^9.5.2",
+    "fs-extra": "^11.3.0",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/yargs": "^17.0.33",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "cpx": "^1.2.1",
+    "eslint": "^8.57.1",
+    "globals": "^16.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.0"
+  }
+}

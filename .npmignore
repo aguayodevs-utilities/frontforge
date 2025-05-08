@@ -1,0 +1,9 @@
+# Ignorar todo a secas
+*
+
+# Excepto build, readme, licence
+!dist/
+!dist/**
+
+!README.md
+!LICENCE
