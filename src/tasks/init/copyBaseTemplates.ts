@@ -19,21 +19,30 @@ export async function copyBaseTemplates(projectRoot: string): Promise<void> {
   const templateSourceDir = path.join(__dirname, '..', '..', '..', 'templates', 'backend-init', 'src');
   const destinationSrcDir = path.join(projectRoot, 'src');
 
+  // --- DEBUG LOGS ---
+  console.log(`   [DEBUG] __dirname: ${__dirname}`);
+  console.log(`   [DEBUG] Calculando templateSourceDir: ${templateSourceDir}`);
+  // --- FIN DEBUG LOGS ---
+
   console.log(`   -> Copiando archivos base desde plantillas a ${destinationSrcDir}...`);
 
   try {
     // Verificar que el directorio de plantillas exista
     if (!await fs.pathExists(templateSourceDir)) {
+      // Log adicional para ayudar a depurar
+      console.error(`   [DEBUG] Contenido de dist/templates:`);
+      try {
+          const distTemplatesContent = await fs.readdir(path.join(__dirname, '..', '..', '..', 'templates'));
+          console.error(`   [DEBUG] ${distTemplatesContent.join(', ')}`);
+          const backendInitContent = await fs.readdir(path.join(__dirname, '..', '..', '..', 'templates', 'backend-init'));
+          console.error(`   [DEBUG] Contenido de dist/templates/backend-init: ${backendInitContent.join(', ')}`);
+      } catch (readdirError) {
+          console.error(`   [DEBUG] No se pudo leer el contenido de dist/templates.`);
+      }
+      // ---
       throw new Error(`Directorio de plantillas base no encontrado: ${templateSourceDir}`);
     }
 
-    // Usar templateCopier para copiar el contenido de la carpeta 'src' de las plantillas
-    // a la carpeta 'src' del proyecto destino.
-    // templateCopier (fs.copy) por defecto no sobrescribe si el destino existe,
-    // pero sí copia el contenido *dentro* del directorio si ya existe.
-    // Si queremos asegurar que los archivos base siempre sean los de la plantilla,
-    // podríamos necesitar eliminar el directorio 'src' destino antes o usar { overwrite: true }
-    // Por ahora, asumimos que si 'src' existe, queremos añadir/mezclar los archivos base.
     await templateCopier(templateSourceDir, destinationSrcDir);
 
     console.log('   ✅ Archivos base copiados exitosamente.');
