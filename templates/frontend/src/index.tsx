@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { Layout, appTheme } from '@aguayodevs-utilities/preact-shared';
 import { TestComponent } from './components/TestComponent';
 import { ThemeProvider } from '@mui/material/styles';
-import "@aguayodevs-utilities/preact-shared/static/css/base.css"; // importa css: estilos, variables, fuentes, etc. base
+import "@aguayodevs-utilities/preact-shared/dist/static/css/base.css"; // importa css: estilos, variables, fuentes, etc. base
 import "./style.css";
 
 const App = () => {
