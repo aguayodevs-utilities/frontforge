@@ -3,9 +3,15 @@ import path from 'path';
 import { TmethodTypeService } from '../../../interfaces/Itemplates';
 
 export class MethodClass {
-    private methodBasePath: string = path.join(process.cwd(), 'framework', 'frontForge', 'templates', 'backend', 'service', 'methods');
+    private methodBasePath: string;
     private methodType: TmethodTypeService = 'front';
+
     constructor(private feature: string, private domain: string, methodType?: TmethodTypeService) {
+        if(__dirname.includes('dist')) {
+            this.methodBasePath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'methods');
+        } else {
+            this.methodBasePath = path.join(process.cwd(), 'framework', 'frontForge', 'templates', 'backend', 'service', 'methods');
+        }
         if(methodType) this.methodType = methodType;
     }
     public getCodeMethod(): string {
