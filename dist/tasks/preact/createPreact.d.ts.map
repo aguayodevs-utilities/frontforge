@@ -1,1 +1,0 @@
-{"version":3,"file":"createPreact.d.ts","sourceRoot":"","sources":["../../../src/tasks/preact/createPreact.ts"],"names":[],"mappings":"AAGA,UAAU,mBAAmB;IAC3B,eAAe,EAAE,MAAM,CAAC;IACxB,SAAS,EAAE,OAAO,CAAC;CACpB;AAED,wBAAsB,YAAY,CAAC,EACjC,eAAe,EACf,SAAS,GACV,EAAE,mBAAmB,GAAG,OAAO,CAAC,IAAI,CAAC,CAmCrC"}
