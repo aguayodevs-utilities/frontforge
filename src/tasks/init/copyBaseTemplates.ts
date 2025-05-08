@@ -15,13 +15,14 @@ import { templateCopier } from '../../utils/templateCopier'; // Importar utilida
  */
 export async function copyBaseTemplates(projectRoot: string): Promise<void> {
   // Determinar la ruta al directorio de plantillas dentro del paquete frontforge
-  // __dirname apunta a .../dist/tasks/init en producción o .../src/tasks/init en desarrollo
-  const templateSourceDir = path.join(__dirname, '..', '..', '..', 'templates', 'backend-init', 'src');
+  // __dirname apunta a .../dist/tasks/init en producción
+  // Necesitamos subir 2 niveles para llegar a .../dist/ y luego ir a templates/backend-init/src
+  const templateSourceDir = path.join(__dirname, '..', '..', 'templates', 'backend-init', 'src'); // Corregido: subir 2 niveles
   const destinationSrcDir = path.join(projectRoot, 'src');
 
   // --- DEBUG LOGS ---
-  console.log(`   [DEBUG] __dirname: ${__dirname}`);
-  console.log(`   [DEBUG] Calculando templateSourceDir: ${templateSourceDir}`);
+  // console.log(`   [DEBUG] __dirname: ${__dirname}`);
+  // console.log(`   [DEBUG] Calculando templateSourceDir: ${templateSourceDir}`);
   // --- FIN DEBUG LOGS ---
 
   console.log(`   -> Copiando archivos base desde plantillas a ${destinationSrcDir}...`);
@@ -32,9 +33,11 @@ export async function copyBaseTemplates(projectRoot: string): Promise<void> {
       // Log adicional para ayudar a depurar
       console.error(`   [DEBUG] Contenido de dist/templates:`);
       try {
-          const distTemplatesContent = await fs.readdir(path.join(__dirname, '..', '..', '..', 'templates'));
+          // Intentar listar el contenido de dist/templates basado en la nueva ruta corregida
+          const distTemplatesDir = path.join(__dirname, '..', '..', 'templates');
+          const distTemplatesContent = await fs.readdir(distTemplatesDir);
           console.error(`   [DEBUG] ${distTemplatesContent.join(', ')}`);
-          const backendInitContent = await fs.readdir(path.join(__dirname, '..', '..', '..', 'templates', 'backend-init'));
+          const backendInitContent = await fs.readdir(path.join(distTemplatesDir, 'backend-init'));
           console.error(`   [DEBUG] Contenido de dist/templates/backend-init: ${backendInitContent.join(', ')}`);
       } catch (readdirError) {
           console.error(`   [DEBUG] No se pudo leer el contenido de dist/templates.`);

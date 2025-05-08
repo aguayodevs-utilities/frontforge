@@ -1,6 +1,6 @@
 {
   "name": "@aguayodevs-utilities/frontforge",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "CLI y librería para generar y compilar micro-frontends (Preact) con servidor de express para app monorepositorio.",
   "main": "dist/index.js",
   "module": "dist/index.js",
