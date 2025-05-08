@@ -7,13 +7,14 @@ export class MethodClass {
     private methodType: TmethodTypeService = 'front';
 
     constructor(private feature: string, private domain: string, methodType?: TmethodTypeService) {
-        if(__dirname.includes('dist')) {
-            this.methodBasePath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'methods');
-        } else {
-            this.methodBasePath = path.join(process.cwd(), 'framework', 'frontForge', 'templates', 'backend', 'service', 'methods');
-        }
+        // Ajustar ruta methodBasePath para producción y desarrollo
+        // __dirname en producción: .../node_modules/@aguayodevs-utilities/frontforge/dist/tasks/express/service
+        // __dirname en desarrollo: .../frontforge/src/tasks/express/service
+        // En ambos casos, necesitamos subir 3 niveles para llegar a la raíz del paquete (dist/ o src/) y luego a templates
+        this.methodBasePath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'methods');
         if(methodType) this.methodType = methodType;
     }
+
     public getCodeMethod(): string {
         let codeMethod = fs.readFileSync(path.join(this.methodBasePath, `${this.methodType}.tpl`), 'utf8');
         //console.log("WTF is codeMethod",codeMethod);

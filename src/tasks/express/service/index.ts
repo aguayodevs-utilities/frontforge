@@ -5,9 +5,9 @@ import { ConstructorClass } from './ConstructorClass';
 import { MethodClass } from './MethodClass';
 
 /**
- * Crea dinámicamente un controller.
+ * Crea dinámicamente un servicio.
  * ──────────────────────────────────────────────
- *  • Usa plantillas principales en templates/backend/controller
+ *  • Usa plantillas principales en templates/backend/service
  *  • Inserta constructor y métodos generados según el tipo
  */
 export const createService = ({
@@ -18,24 +18,17 @@ export const createService = ({
 }: IcreateService): void => {
   try {
     /* ───────── directorios de trabajo ───────── */
-    const projectRoot   = process.cwd();
-    const genericTokenDir     = path.join(projectRoot, 'src', 'classes', 'generic');
-    const httpExceptionDir    = path.join(projectRoot, 'src', 'classes', 'http');
+    const projectRoot   = process.cwd(); // Usado para la ruta de destino del archivo
     const servicesDir    = path.join(projectRoot, 'src', 'services', domain);
+    // const genericTokenDir     = path.join(projectRoot, 'src', 'classes', 'generic'); // No se usa
+    // const httpExceptionDir    = path.join(projectRoot, 'src', 'classes', 'http'); // No se usa
+
     let serviceTpl: string;
-    if (__dirname.includes('dist')) {
-      // En producción, __dirname es algo como .../node_modules/@aguayodevs-utilities/frontforge/dist/tasks/express/service
-      // Necesitamos subir 3 niveles para llegar a .../node_modules/@aguayodevs-utilities/frontforge/dist/
-      // Y luego ir a templates/backend/service/service.ts.tpl
-      serviceTpl = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'service.ts.tpl');
-    } else {
-      // En desarrollo, __dirname es algo como .../frontforge/src/tasks/express/service
-      // projectRoot es .../frontforge
-      // La ruta original era projectRoot + framework/frontForge/templates... lo cual es incorrecto.
-      // Debería ser relativa a __dirname o usar una ruta absoluta al proyecto si es necesario.
-      // Por ahora, asumimos que en desarrollo la estructura es src/templates
-      serviceTpl = path.join(projectRoot, 'templates', 'backend', 'service', 'service.ts.tpl');
-    }
+    // Ajustar ruta serviceTpl para producción y desarrollo
+    // __dirname en producción: .../node_modules/@aguayodevs-utilities/frontforge/dist/tasks/express/service
+    // __dirname en desarrollo: .../frontforge/src/tasks/express/service
+    // En ambos casos, necesitamos subir 3 niveles para llegar a la raíz del paquete (dist/ o src/) y luego a templates
+    serviceTpl = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'service.ts.tpl');
 
     /* ───────── paths de archivo ───────── */
     const serviceFilePath = path.join(servicesDir, `${feature}.service.ts`);
@@ -46,47 +39,23 @@ export const createService = ({
       );
     }
 
-    console.info(
-      `📂 Creando servicio ${feature} en dominio ${domain} (constructor: ${constructorType})`,
-    );
+    /* ───────── generar código de constructor y métodos ───────── */
+    const constructorInstance = new ConstructorClass(projectRoot, domain, feature, constructorType);
+    const codeConstructor     = constructorInstance.getCodeConstructor();
+    const methodInstance      = new MethodClass(feature, domain, methodType);
+    const codeMethod          = methodInstance.getCodeMethod();
 
-    /* ───────── genera bloques dinámicos ───────── */
-    const codeConstructor = new ConstructorClass(
-      projectRoot,
-      domain,
-      feature,
-      constructorType,
-    ).getCodeConstructor();
+    /* Leer, reemplazar y escribir el template del servicio */
+    let serviceContent = fs.readFileSync(serviceTpl, 'utf8');
+    serviceContent = serviceContent
+      .replace('/* ${Constructor} */', codeConstructor)
+      .replace('/* ${Methods} */', codeMethod);
 
-    const codeMethod = new MethodClass(feature, domain, methodType).getCodeMethod();
-
-    /* ───────── path relativo para imports ───────── */
-    const relativePathGenericToken = (
-      path.relative(path.dirname(servicesDir), path.dirname(genericTokenDir)) + path.sep
-    )
-      .split(path.sep)
-      .join('/') /* «../../classes/generic/» */;
-
-    const relativePathHttpException = (
-      path.relative(path.dirname(servicesDir), path.dirname(httpExceptionDir)) + path.sep
-    )
-      .split(path.sep)
-      .join('/') /* «../../classes/http/» */;
-
-    /* ───────── inyecta en plantilla ───────── */
-    let codeServiceFile = fs
-      .readFileSync(serviceTpl, 'utf8')
-      .replace(/\${ServiceName}/g, feature)
-      .replace(/\${ConstructorCode}/g, codeConstructor)
-      .replace(/\${MethodCode}/g, codeMethod)
-      .replace(/\${RelativePathGenericToken}/g, relativePathGenericToken.concat('token.ts'))
-      .replace(/\${RelativePathHttpException}/g, relativePathHttpException.concat('httpException.ts'));
-
-    /* ───────── guarda archivo ───────── */
     fs.ensureDirSync(servicesDir);
-    fs.writeFileSync(serviceFilePath, codeServiceFile);
-    console.log('✅ Service generado:', serviceFilePath);
-  } catch (error) {
+    fs.writeFileSync(serviceFilePath, serviceContent);
+    console.log(`✅ Service generado: ${serviceFilePath}`);
+
+  } catch (error: any) {
     console.error('❌ Error al generar service:', error);
   }
 };

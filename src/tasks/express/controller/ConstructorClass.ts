@@ -7,17 +7,16 @@ export class ConstructorClass {
   private constructorBasePath: string;
 
   constructor(
-    private projectRoot: string,
+    private projectRoot: string, // projectRoot ya no se usa para determinar la ruta de templates
     private domain: string,
     private feature: string,
     private constructorType: TconstructorTypeController = 'byRole',
   ) {
     // Ajustar ruta constructorBasePath para producción y desarrollo
-    if (__dirname.includes('dist')) {
-      this.constructorBasePath = path.join(process.cwd(), '@aguayodevs-utilities', 'frontforge', 'templates', 'backend', 'controller', 'constructors');
-    } else {
-      this.constructorBasePath = path.join(process.cwd(), '@aguayodevs-utilities', 'frontforge', 'templates', 'backend', 'controller', 'constructors');
-    }
+    // __dirname en producción: .../node_modules/@aguayodevs-utilities/frontforge/dist/tasks/express/controller
+    // __dirname en desarrollo: .../frontforge/src/tasks/express/controller
+    // En ambos casos, necesitamos subir 3 niveles para llegar a la raíz del paquete (dist/ o src/) y luego a templates
+    this.constructorBasePath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'controller', 'constructors');
   }
 
   public getCodeConstructor(): string {
@@ -31,7 +30,7 @@ export class ConstructorClass {
     switch (this.constructorType) {
       case 'byRole': {
         const controllerAbsPath = path.join(
-          this.projectRoot,
+          this.projectRoot, // projectRoot se usa aquí para la ruta del archivo de destino
           'src',
           'controllers',
           this.domain,
@@ -47,9 +46,9 @@ export class ConstructorClass {
           .join('/'); // «.»
 
         codeConstructor = codeConstructor
-          .replace('${RelativePathController}', relativePathController)
-          .replace('${ControllerFileName}', `${this.feature}.controller`) // sin .ts extra
-          .replace('${SessionRole}', this.domain.split('/').pop() || 'admin');
+          .replace(/\${RelativePathController}/g, relativePathController)
+          .replace(/\${ControllerFileName}/g, `${this.feature}.controller`) // sin .ts extra
+          .replace(/\${SessionRole}/g, this.domain.split('/').pop() || 'admin');
         break;
       }
     }

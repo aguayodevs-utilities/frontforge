@@ -7,17 +7,16 @@ export class ConstructorClass {
   private constructorBasePath: string;
 
   constructor(
-    private projectRoot: string,
+    private projectRoot: string, // projectRoot ya no se usa para determinar la ruta de templates
     private domain: string,
     private feature: string,
     private constructorType: TconstructorTypeService = 'default',
   ) {
     // Ajustar ruta constructorBasePath para producción y desarrollo
-    if (__dirname.includes('dist')) {
-      this.constructorBasePath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'constructors');
-    } else {
-      this.constructorBasePath = path.join(this.projectRoot, 'framework', 'frontForge', 'templates', 'backend', 'service', 'constructors');
-    }
+    // __dirname en producción: .../node_modules/@aguayodevs-utilities/frontforge/dist/tasks/express/service
+    // __dirname en desarrollo: .../frontforge/src/tasks/express/service
+    // En ambos casos, necesitamos subir 3 niveles para llegar a la raíz del paquete (dist/ o src/) y luego a templates
+    this.constructorBasePath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'constructors');
   }
 
   public getCodeConstructor(): string {
@@ -39,19 +38,19 @@ export class ConstructorClass {
           `${this.feature}.service.ts`,
         );
 
-        const relativePathService = path
+        const relativePathController = path
           .relative(
-            path.dirname(serviceAbsPath),
+            path.dirname(controllerAbsPath),
             path.join(this.projectRoot, 'src', 'services', this.domain),
           )
           .split(path.sep)
           .join('/'); // «.»
 
         codeConstructor = codeConstructor
-          .replace('${RelativePathService}', relativePathService)
-          .replace('${ServiceFileName}', `${this.feature}.service`) // sin .ts extra
-          .replace('${SessionRole}', this.domain.split('/').pop() || 'admin');
-          */
+          .replace(/\${RelativePathController}/g, relativePathController)
+          .replace(/\${ControllerFileName}/g, `${this.feature}.controller`) // sin .ts extra
+          .replace(/\${SessionRole}/g, this.domain.split('/').pop() || 'admin');
+        */
         break;
       }
     }

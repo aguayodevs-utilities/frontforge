@@ -7,11 +7,11 @@ export class MethodClass {
     private methodType: TmethodTypeController = 'front';
 
     constructor(private feature: string) {
-        if (__dirname.includes('dist')) {
-            this.methodBasePath = path.join(process.cwd(), '@aguayodevs-utilities', 'frontforge', 'templates', 'backend', 'controller', 'methods');
-        } else {
-            this.methodBasePath = path.join(process.cwd(), '@aguayodevs-utilities', 'frontForge', 'templates', 'backend', 'controller', 'methods');
-        }
+        // Ajustar ruta methodBasePath para producción y desarrollo
+        // __dirname en producción: .../node_modules/@aguayodevs-utilities/frontforge/dist/tasks/express/controller
+        // __dirname en desarrollo: .../frontforge/src/tasks/express/controller
+        // En ambos casos, necesitamos subir 3 niveles para llegar a la raíz del paquete (dist/ o src/) y luego a templates
+        this.methodBasePath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'controller', 'methods');
     }
 
     public getCodeMethod(): string {
