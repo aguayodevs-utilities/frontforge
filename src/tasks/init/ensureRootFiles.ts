@@ -1,8 +1,9 @@
 import path from 'node:path';
 import fs from 'fs-extra';
 
-// Definir contenido base para los archivos raíz
-// (Podrían moverse a templates/backend-init/ si se prefiere copiar en lugar de generar)
+// Importar la definición base de package.json (o definirla aquí si se prefiere)
+// Para evitar duplicación, asumimos que está definida en installDependencies o un archivo compartido
+// Por ahora, la redefinimos aquí para simplicidad, pero idealmente se importaría.
 
 const BASE_PACKAGE_JSON = {
   name: "mi-backend-frontforge", // Nombre por defecto, el usuario debería cambiarlo
@@ -19,12 +20,13 @@ const BASE_PACKAGE_JSON = {
   keywords: ["express", "frontforge", "backend"],
   author: "", // Dejar vacío para que el usuario lo llene
   license: "ISC", // O la licencia deseada
+  // Las dependencias se instalan en installDependencies.ts,
+  // pero las listamos aquí para que el package.json inicial las tenga.
   dependencies: {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2"
-    // Se instalarán explícitamente más tarde
   },
   devDependencies: {
     "@types/cors": "^2.8.17",
@@ -38,7 +40,6 @@ const BASE_PACKAGE_JSON = {
     "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
-     // Se instalarán explícitamente más tarde
   }
 };
 
@@ -89,6 +90,7 @@ export async function ensureRootFiles(projectRoot: string): Promise<void> {
     // package.json
     const pkgPath = path.join(projectRoot, 'package.json');
     if (!await fs.pathExists(pkgPath)) {
+      // Usa la definición BASE_PACKAGE_JSON para crear el archivo inicial
       await fs.writeJson(pkgPath, BASE_PACKAGE_JSON, { spaces: 2 });
       console.log('      ✅ package.json creado.');
     } else {
