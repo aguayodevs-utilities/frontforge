@@ -3,6 +3,7 @@ import yargs, { ArgumentsCamelCase } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { createFrontend } from './features/createFrontend';
 import { buildAll }       from './features/buildAll';
+import { initProject }    from './features/initProject'; // Importar nueva feature
 
 /**
  * @interface CreateArgs
@@ -16,6 +17,17 @@ interface CreateArgs extends ArgumentsCamelCase {
   port: number;
 }
 
+/**
+ * @interface InitArgs
+ * Argumentos esperados para el comando 'init'. (Actualmente vacío)
+ * Extiende ArgumentsCamelCase de yargs.
+ */
+interface InitArgs extends ArgumentsCamelCase {
+  // Podrían añadirse opciones como --skip-install
+  'skip-install'?: boolean;
+}
+
+
 yargs(hideBin(process.argv))
   /**
    * Comando para crear un nuevo micro-frontend.
@@ -24,14 +36,14 @@ yargs(hideBin(process.argv))
    * @param {number} [port=5173] - Puerto para el servidor de desarrollo. Opcional.
    */
   .command<CreateArgs>(
-    'create <path>', // Se elimina [port] ya que se define como opción
+    'create <path>',
     'Genera un nuevo micro-frontend Preact y los stubs de backend Express asociados.',
     (y) =>
       y
         .positional('path', {
           describe: 'Ruta combinada dominio/feature (ej. admin/reports)',
           type: 'string',
-          demandOption: true, // Asegura que 'path' sea obligatorio
+          demandOption: true,
         })
         .option('port', {
           alias: 'p',
@@ -45,17 +57,15 @@ yargs(hideBin(process.argv))
      * @param {CreateArgs} argv - Argumentos parseados por yargs.
      */
     (argv) => {
-      // Validar y extraer dominio/feature del path
       const pathParts = argv.path.split('/');
-      if (pathParts.length < 2 || pathParts.some(part => !part)) { // Verifica partes vacías también
+      if (pathParts.length < 2 || pathParts.some(part => !part)) {
         console.error('❌ Formato de path inválido. Se requiere: dominio/feature (ej. admin/reports)');
-        process.exit(1); // Termina si el formato es incorrecto
+        process.exit(1);
       }
-      const featureName = pathParts.pop()!; // Extrae el último elemento como feature
-      const domainPath = pathParts.join('/'); // Une el resto como dominio
+      const featureName = pathParts.pop()!;
+      const domainPath = pathParts.join('/');
 
       console.log("-> Ejecutando createFrontend con:", { domainPath, featureName, port: argv.port });
-      // Llama a la función principal para crear el frontend
       createFrontend(domainPath, featureName, argv);
     }
   )
@@ -65,17 +75,39 @@ yargs(hideBin(process.argv))
    */
   .command(
     'build',
-    'Compila todos los micro-frontends definidos en fronts.json.',
+    'Compila todos los micro-frontends definidos en config/fronts.json.',
     () => {}, // No necesita builder
     /**
      * Handler para el comando 'build'. Llama a buildAll.
      */
-    buildAll // Llama directamente a la función importada
+    buildAll
    )
-  .demandCommand(1, 'Debes especificar un comando (create o build).') // Exige al menos un comando
-  .strict() // Falla con opciones desconocidas
-  .help() // Habilita la ayuda automática (--help)
-  .alias('help', 'h') // Alias para help
-  .version() // Habilita la versión automática (--version)
-  .alias('version', 'v') // Alias para version
-  .parse(); // Parsea los argumentos
+  /**
+   * Comando para inicializar una estructura de proyecto backend compatible.
+   * Uso: frontforge init [--skip-install]
+   */
+  .command<InitArgs>( // Añadir comando init
+    'init',
+    'Inicializa una estructura de proyecto backend Express compatible con frontforge.',
+    (y) => // Builder para opciones de init
+        y.option('skip-install', {
+            type: 'boolean',
+            describe: 'Omitir la instalación automática de dependencias npm.',
+            default: false,
+        }),
+    /**
+     * Handler para el comando 'init'. Llama a initProject.
+     * @param {InitArgs} argv - Argumentos parseados por yargs.
+     */
+    (argv) => {
+        console.log("-> Ejecutando initProject...");
+        initProject({ installDeps: !argv['skip-install'] }); // Pasar opción a la función
+    }
+   )
+  .demandCommand(1, 'Debes especificar un comando (init, create o build).') // Actualizar mensaje
+  .strict()
+  .help()
+  .alias('help', 'h')
+  .version()
+  .alias('version', 'v')
+  .parse();

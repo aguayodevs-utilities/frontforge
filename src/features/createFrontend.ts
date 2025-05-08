@@ -8,14 +8,14 @@ import { templateCopier }       from '../utils/templateCopier';
 import { configureVite }        from '../tasks/preact/configureVite';
 import { createPreact }         from '../tasks/preact/createPreact';
 
-// Tareas de manipulación de plantillas y configuración
-import { createTestComponent }  from '../tasks/template/createTestComponent';
-import { deployAssets }         from '../tasks/template/deployAssets';
-import { updateFrontsJson }     from '../tasks/template/updateFrontsJson';
-import { updateIndexFile }      from '../tasks/template/updateIndexFile';
-import { updatePackageJson }    from '../tasks/template/updatePackageJson';
-import { updateShared }         from '../tasks/template/updateShared';
-import { updateStylesFile }     from '../tasks/template/updateStylesFile';
+// Tareas de manipulación de plantillas y configuración (ahora en preact)
+import { createTestComponent }  from '../tasks/preact/createTestComponent';
+import { deployAssets }         from '../tasks/preact/deployAssets';
+import { updateFrontsJson }     from '../tasks/preact/updateFrontsJson';
+import { updateIndexFile }      from '../tasks/preact/updateIndexFile';
+import { updatePackageJson }    from '../tasks/preact/updatePackageJson';
+import { updateShared }         from '../tasks/preact/updateShared';
+import { updateStylesFile }     from '../tasks/preact/updateStylesFile';
 
 // Tareas para generar stubs de backend Express
 import { createController }     from '../tasks/express/controller';
