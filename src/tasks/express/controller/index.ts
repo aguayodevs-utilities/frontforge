@@ -23,15 +23,12 @@ export const createController = ({
     const genericTokenDir     = path.join(projectRoot, 'src', 'classes', 'generic');
     const servicesDir    = path.join(projectRoot, 'src', 'services', domain);
     console.log("WTF is going", {projectRoot, controllersDir, genericTokenDir, servicesDir});
-    const controllerTpl  = path.join(
-      projectRoot,
-      'framework',
-      'frontForge',
-      'templates',
-      'backend',
-      'controller',
-      'controller.ts.tpl',
-    );
+    let controllerTpl: string;
+    if (__dirname.includes('dist')) {
+      controllerTpl = path.join(__dirname, '..', '..', 'templates', 'backend', 'controller', 'controller.ts.tpl');
+    } else {
+      controllerTpl = path.join(projectRoot, 'framework', 'frontForge', 'templates', 'backend', 'controller', 'controller.ts.tpl');
+    }
 
     /* ───────── paths de archivo ───────── */
     const controllerFilePath = path.join(controllersDir, `${feature}.controller.ts`);

@@ -22,15 +22,12 @@ export const createService = ({
     const genericTokenDir     = path.join(projectRoot, 'src', 'classes', 'generic');
     const httpExceptionDir    = path.join(projectRoot, 'src', 'classes', 'http');
     const servicesDir    = path.join(projectRoot, 'src', 'services', domain);
-    const serviceTpl  = path.join(
-      projectRoot,
-      'framework',
-      'frontForge',
-      'templates',
-      'backend',
-      'service',
-      'service.ts.tpl',
-    );
+    let serviceTpl: string;
+    if (__dirname.includes('dist')) {
+      serviceTpl = path.join(__dirname, '..', '..', 'templates', 'backend', 'service', 'service.ts.tpl');
+    } else {
+      serviceTpl = path.join(projectRoot, 'framework', 'frontForge', 'templates', 'backend', 'service', 'service.ts.tpl');
+    }
 
     /* ───────── paths de archivo ───────── */
     const serviceFilePath = path.join(servicesDir, `${feature}.service.ts`);
