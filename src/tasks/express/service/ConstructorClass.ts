@@ -14,7 +14,7 @@ export class ConstructorClass {
   ) {
     // Ajustar ruta constructorBasePath para producción y desarrollo
     if (__dirname.includes('dist')) {
-      this.constructorBasePath = path.join(__dirname, '..', '..', 'templates', 'backend', 'service', 'constructors');
+      this.constructorBasePath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'constructors');
     } else {
       this.constructorBasePath = path.join(this.projectRoot, 'framework', 'frontForge', 'templates', 'backend', 'service', 'constructors');
     }
