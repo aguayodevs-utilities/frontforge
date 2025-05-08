@@ -47,9 +47,22 @@ export const createService = ({
 
     /* Leer, reemplazar y escribir el template del servicio */
     let serviceContent = fs.readFileSync(serviceTpl, 'utf8');
+
+    // Calcular rutas relativas
+    const genericTokenPath = path.join(projectRoot, 'src', 'classes', 'generic', 'GenericToken'); // Sin .ts para import
+    const httpExceptionPath = path.join(projectRoot, 'src', 'classes', 'http', 'HttpException'); // Sin .ts para import
+
+    const relativePathGenericToken = path.relative(path.dirname(serviceFilePath), genericTokenPath).split(path.sep).join('/');
+    const relativePathHttpException = path.relative(path.dirname(serviceFilePath), httpExceptionPath).split(path.sep).join('/');
+    const serviceName = `${feature.charAt(0).toUpperCase() + feature.slice(1)}Service`;
+
+
     serviceContent = serviceContent
-      .replace('/* ${Constructor} */', codeConstructor)
-      .replace('/* ${Methods} */', codeMethod);
+      .replace(/\/\* \${Constructor} \*\//g, codeConstructor)
+      .replace(/\/\* \${Methods} \*\//g, codeMethod)
+      .replace(/\${ServiceName}/g, serviceName)
+      .replace(/\${RelativePathGenericToken}/g, relativePathGenericToken)
+      .replace(/\${RelativePathHttpException}/g, relativePathHttpException);
 
     fs.ensureDirSync(servicesDir);
     fs.writeFileSync(serviceFilePath, serviceContent);

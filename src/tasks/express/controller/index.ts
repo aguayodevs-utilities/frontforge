@@ -48,9 +48,20 @@ export const createController = ({
 
     /* Leer, reemplazar y escribir el template del controller */
     let controllerContent = fs.readFileSync(controllerTpl, 'utf8');
+
+    // Calcular rutas relativas
+    const genericTokenPath = path.join(projectRoot, 'src', 'classes', 'generic', 'GenericToken'); // Sin .ts para import
+    const servicePath = path.join(projectRoot, 'src', 'services', domain, `${feature}.service`); // Sin .ts para import
+
+    const relativePathGenericToken = path.relative(path.dirname(controllerFilePath), genericTokenPath).split(path.sep).join('/');
+    const relativePathService = path.relative(path.dirname(controllerFilePath), servicePath).split(path.sep).join('/');
+
     controllerContent = controllerContent
-      .replace('/* ${Constructor} */', codeConstructor)
-      .replace('/* ${Methods} */', codeMethod);
+      .replace(/\/\* \${Constructor} \*\//g, codeConstructor)
+      .replace(/\/\* \${Methods} \*\//g, codeMethod)
+      .replace(/\${FeatureCamel}/g, feature)
+      .replace(/\${RelativePathGenericToken}/g, relativePathGenericToken)
+      .replace(/\${RelativePathService}/g, relativePathService);
 
     fs.ensureDirSync(controllersDir);
     fs.writeFileSync(controllerFilePath, controllerContent);
