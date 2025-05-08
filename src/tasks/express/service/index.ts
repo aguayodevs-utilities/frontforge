@@ -24,9 +24,9 @@ export const createService = ({
     const servicesDir    = path.join(projectRoot, 'src', 'services', domain);
     let serviceTpl: string;
     if (__dirname.includes('dist')) {
-      serviceTpl = path.join(__dirname, '..', '..', 'templates', 'backend', 'service', 'service.ts.tpl');
+      serviceTpl = path.join(projectRoot, '@aguayodevs-utilities', 'frontforge', 'templates', 'backend', 'service', 'service.ts.tpl');
     } else {
-      serviceTpl = path.join(projectRoot, 'framework', 'frontForge', 'templates', 'backend', 'service', 'service.ts.tpl');
+      serviceTpl = path.join(projectRoot, '@aguayodevs-utilities', 'frontforge', 'frontForge', 'templates', 'backend', 'service', 'service.ts.tpl');
     }
 
     /* ───────── paths de archivo ───────── */

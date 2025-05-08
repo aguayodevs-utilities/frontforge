@@ -25,9 +25,9 @@ export const createController = ({
     console.log("WTF is going", {projectRoot, controllersDir, genericTokenDir, servicesDir});
     let controllerTpl: string;
     if (__dirname.includes('dist')) {
-      controllerTpl = path.join(__dirname, '..', '..', 'templates', 'backend', 'controller', 'controller.ts.tpl');
+      controllerTpl = path.join(projectRoot, '@aguayodevs-utilities', 'frontforge', 'templates', 'backend', 'controller', 'controller.ts.tpl');
     } else {
-      controllerTpl = path.join(projectRoot, 'framework', 'frontForge', 'templates', 'backend', 'controller', 'controller.ts.tpl');
+      controllerTpl = path.join(projectRoot, '@aguayodevs-utilities', 'frontForge', 'templates', 'backend', 'controller', 'controller.ts.tpl');
     }
 
     /* ───────── paths de archivo ───────── */
