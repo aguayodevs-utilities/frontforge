@@ -8,9 +8,9 @@ export class MethodClass {
 
     constructor(private feature: string) {
         if (__dirname.includes('dist')) {
-            this.methodBasePath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'controller', 'methods');
+            this.methodBasePath = path.join(process.cwd(), '@aguayodevs-utilities', 'frontforge', 'templates', 'backend', 'controller', 'methods');
         } else {
-            this.methodBasePath = path.join(process.cwd(), 'framework', 'frontForge', 'templates', 'backend', 'controller', 'methods');
+            this.methodBasePath = path.join(process.cwd(), '@aguayodevs-utilities', 'frontForge', 'templates', 'backend', 'controller', 'methods');
         }
     }
 
