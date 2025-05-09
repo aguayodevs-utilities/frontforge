@@ -57,19 +57,16 @@ export async function copyNginxConfig({ projectRoot, nginxConfigDir = 'nginx' }:
       const frontsArray: FrontConfigEntry[] = await fs.readJson(frontsConfigPath);
       if (Array.isArray(frontsArray)) {
         frontsArray.forEach(front => {
-          // projectFullPath es algo como "fronts/main/dashboard"
-          // Necesitamos la parte después de "fronts/" para la URL base, ej. "/main/dashboard/"
-          // Y la ruta completa para el alias en el sistema de archivos de Nginx (asumiendo que public/ es la raíz)
           const urlBasePath = front.projectFullPath.startsWith('fronts/') 
                               ? front.projectFullPath.substring('fronts'.length) 
-                              : `/${front.projectFullPath}`; // Asegurar slash inicial
+                              : `/${front.projectFullPath}`; 
           
-          const aliasPath = front.projectFullPath; // Esta será la ruta relativa a la raíz de Nginx /usr/share/nginx/html/
+          const aliasPath = front.projectFullPath; 
 
           frontendLocations += `
     location ${urlBasePath}/ {
         alias /usr/share/nginx/html/${aliasPath}/;
-        try_files $uri $uri/ ${urlBasePath}/index.html;
+        try_files $uri $uri/ index.html; # Modificado para SPA dentro de alias
     }
 `;
         });
