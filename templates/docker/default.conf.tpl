@@ -13,12 +13,7 @@ server {
         try_files $uri $uri/ /index.html; 
     }
 
-    # Aquí se añadirían locations específicos para cada micro-frontend
-    # Ejemplo:
-    # location /main/dashboard/ {
-    #     alias /usr/share/nginx/html/main/dashboard/;
-    #     try_files $uri $uri/ /main/dashboard/index.html;
-    # }
+    ##FRONTEND_LOCATIONS##
 
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
