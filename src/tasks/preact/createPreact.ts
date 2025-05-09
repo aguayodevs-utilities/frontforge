@@ -59,7 +59,7 @@ export async function createPreact({
     // --- 4. Instalación de Dependencias de Runtime Base ---
     console.log('📦 Instalando dependencias de runtime base...');
     const runtimeDeps = [
-      '@aguayodevs-utilities/preact-shared@^1.0.2',
+      '@aguayodevs-utilities/preact-shared@^1.0.3',
       'dotenv',
       '@emotion/react@^11.14.0',
       '@emotion/styled@^11.14.0',
