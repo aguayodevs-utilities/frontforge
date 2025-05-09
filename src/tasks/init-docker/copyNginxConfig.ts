@@ -57,16 +57,22 @@ export async function copyNginxConfig({ projectRoot, nginxConfigDir = 'nginx' }:
       const frontsArray: FrontConfigEntry[] = await fs.readJson(frontsConfigPath);
       if (Array.isArray(frontsArray)) {
         frontsArray.forEach(front => {
-          const urlBasePath = front.projectFullPath.startsWith('fronts/') 
+          // Asegurar que urlBasePath siempre comience con un slash y no termine con uno si no es solo "/"
+          let urlBasePath = front.projectFullPath.startsWith('fronts/') 
                               ? front.projectFullPath.substring('fronts'.length) 
                               : `/${front.projectFullPath}`; 
+          if (!urlBasePath.startsWith('/')) {
+            urlBasePath = `/${urlBasePath}`;
+          }
+          // Para try_files, la URI del index.html debe ser consistente con la location.
+          // Si location es /main/app1/, el fallback es /main/app1/index.html
           
           const aliasPath = front.projectFullPath; 
 
           frontendLocations += `
     location ${urlBasePath}/ {
         alias /usr/share/nginx/html/${aliasPath}/;
-        try_files $uri $uri/ index.html; # Modificado para SPA dentro de alias
+        try_files $uri $uri/ ${urlBasePath.endsWith('/') ? urlBasePath : urlBasePath + '/'}index.html;
     }
 `;
         });
