@@ -3,14 +3,14 @@ import path from 'path';
 
 /**
  * @interface FrontsJsonEntry
- * Define la estructura de una entrada en el archivo `config/fronts.json`.
+ * Define la estructura de una entrada en el archivo `.frontforge/frontForgeFronts.json`.
  * @property {string} name - Nombre identificador del micro-frontend (usualmente camelCase).
  * @property {string} projectFullPath - Ruta relativa desde la raíz del repositorio hasta el directorio del micro-frontend.
  * @property {number} port - Puerto asignado para el servidor de desarrollo.
  */
 interface FrontsJsonEntry {
   name: string;
-  projectFullPath: string; // Cambiado de 'path' a 'projectFullPath' para consistencia con buildAll
+  projectFullPath: string; 
   port: number;
 }
 
@@ -27,8 +27,11 @@ interface UpdateFrontsJsonOptions {
   port: number;
 }
 
+const CONFIG_DIR_NAME = '.frontforge';
+const FRONTS_CONFIG_FILE_NAME = 'frontForgeFronts.json';
+
 /**
- * Actualiza el archivo de configuración `config/fronts.json` (creándolo si no existe)
+ * Actualiza el archivo de configuración `.frontforge/frontForgeFronts.json` (creándolo si no existe)
  * para añadir o actualizar la entrada del micro-frontend especificado.
  * Almacena el nombre, la ruta relativa desde la raíz del repo y el puerto.
  *
@@ -39,8 +42,8 @@ interface UpdateFrontsJsonOptions {
  */
 export async function updateFrontsJson({ projectName, projectFullPath, port }: UpdateFrontsJsonOptions): Promise<void> {
   const repoRoot = process.cwd();
-  // Usar config/fronts.json para consistencia con buildAll
-  const frontsConfigPath = path.join(repoRoot, 'config', 'fronts.json');
+  const frontforgeConfigDir = path.join(repoRoot, CONFIG_DIR_NAME);
+  const frontsConfigPath = path.join(frontforgeConfigDir, FRONTS_CONFIG_FILE_NAME);
   let frontsArray: FrontsJsonEntry[] = [];
 
   try {
@@ -59,38 +62,35 @@ export async function updateFrontsJson({ projectName, projectFullPath, port }: U
   }
 
   // Calcular la ruta relativa desde la raíz del repo
-  // Esta es la ruta que buildAll espera en projectFullPath
   const relativeProjectPath = path.relative(repoRoot, projectFullPath).split(path.sep).join('/');
 
   // Crear la nueva entrada o actualizar la existente
   const newEntry: FrontsJsonEntry = {
     name: projectName,
-    projectFullPath: relativeProjectPath, // Guardar ruta relativa a repoRoot
+    projectFullPath: relativeProjectPath, 
     port: port
   };
 
   // Buscar si ya existe una entrada con el mismo nombre
-  const existingIndex = frontsArray.findIndex((entry) => entry && entry.name === projectName); // Añadir chequeo de 'entry'
+  const existingIndex = frontsArray.findIndex((entry) => entry && entry.name === projectName); 
 
   if (existingIndex >= 0) {
     // Reemplazar la entrada existente
-    console.log(`ℹ️  Actualizando entrada existente para '${projectName}' en ${path.basename(frontsConfigPath)}.`);
+    console.log(`ℹ️  Actualizando entrada existente para '${projectName}' en ${FRONTS_CONFIG_FILE_NAME}.`);
     frontsArray[existingIndex] = newEntry;
   } else {
     // Añadir la nueva entrada
-    console.log(`ℹ️  Añadiendo nueva entrada para '${projectName}' en ${path.basename(frontsConfigPath)}.`);
+    console.log(`ℹ️  Añadiendo nueva entrada para '${projectName}' en ${FRONTS_CONFIG_FILE_NAME}.`);
     frontsArray.push(newEntry);
   }
 
   try {
-    // Asegurar que el directorio config exista
-    await fs.ensureDir(path.dirname(frontsConfigPath));
+    // Asegurar que el directorio .frontforge exista
+    await fs.ensureDir(frontforgeConfigDir);
     // Escribir el array actualizado de vuelta al archivo JSON con indentación
     await fs.writeJson(frontsConfigPath, frontsArray, { spaces: 2 });
-    console.log(`✅ ${path.basename(frontsConfigPath)} actualizado.`);
+    console.log(`✅ ${FRONTS_CONFIG_FILE_NAME} actualizado.`);
   } catch (error: any) {
     console.error(`❌ Error al escribir en ${frontsConfigPath}:`, error.message);
-    // Considerar relanzar el error
-    // throw error;
   }
-};
+}
