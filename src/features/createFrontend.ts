@@ -21,8 +21,8 @@ import { updateStylesFile }     from '../tasks/preact/updateStylesFile';
 import { createController }     from '../tasks/express/controller';
 import { createService }        from '../tasks/express/service';
 
-// Tareas para Docker (si se necesitan aquí en el futuro, ej. para actualizar nginx.conf)
-// import { copyNginxConfig } from '../tasks/init-docker/copyNginxConfig'; // Ejemplo
+// Tareas para Docker
+import { copyNginxConfig }      from '../tasks/init-docker/copyNginxConfig'; 
 
 const CONFIG_DIR_NAME = '.frontforge';
 const PROJECT_CONFIG_FILE_NAME = 'config.json';
@@ -32,7 +32,7 @@ interface ProjectConfig {
 
 /**
  * Orquesta la creación completa de un micro-frontend Preact.
- * Condicionalmente genera stubs de backend Express si el proyecto base es de tipo 'express'.
+ * Condicionalmente genera stubs de backend Express o actualiza config Nginx para Docker.
  *
  * @async
  * @function createFrontend
@@ -61,21 +61,22 @@ export async function createFrontend(
   console.log(`🔌 Puerto de desarrollo: ${port}`);
   console.log(`🧭 Usar router: ${useRouter}`); 
 
-  let projectConfig: ProjectConfig = { backendType: 'unknown' }; // Default
+  let projectConfig: ProjectConfig = { backendType: 'unknown' }; 
   try {
     const projectConfigPath = path.join(repoRoot, CONFIG_DIR_NAME, PROJECT_CONFIG_FILE_NAME);
     if (await fs.pathExists(projectConfigPath)) {
       projectConfig = await fs.readJson(projectConfigPath);
     } else {
-      console.warn(`⚠️  Archivo de configuración del proyecto (${projectConfigPath}) no encontrado. No se generarán stubs de backend específicos.`);
+      console.warn(`⚠️  Archivo de configuración del proyecto (${projectConfigPath}) no encontrado. Asumiendo tipo de backend desconocido.`);
     }
   } catch (error: any) {
-    console.warn(`⚠️  Error al leer ${PROJECT_CONFIG_FILE_NAME}: ${error.message}. No se generarán stubs de backend específicos.`);
+    console.warn(`⚠️  Error al leer ${PROJECT_CONFIG_FILE_NAME}: ${error.message}. Asumiendo tipo de backend desconocido.`);
   }
   console.log(`ℹ️  Tipo de backend detectado: ${projectConfig.backendType}`);
 
 
   try {
+    // Pasos 1-3: Creación y configuración base del frontend Preact
     console.log('\n[Paso 1/7] Creando estructura base del proyecto Preact...');
     await createPreact({ projectFullPath, useRouter }); 
     console.log('✅ Estructura base Preact creada.');
@@ -99,30 +100,32 @@ export async function createFrontend(
     await deployAssets({ projectFullPath }); 
     console.log('✅ Modificaciones del frontend aplicadas.');
 
+    // Paso 4: Registrar el frontend (actualiza frontForgeFronts.json)
     console.log(`\n[Paso 4/7] Registrando micro-frontend en ${CONFIG_DIR_NAME}/frontForgeFronts.json...`);
     await updateFrontsJson({ projectFullPath, projectName, port });
     console.log('✅ Micro-frontend registrado.');
 
-    console.log('\n[Paso 5/7] Instalando dependencias y compilando...');
+    // Paso 5: Instalar dependencias y compilar el frontend recién creado
+    console.log('\n[Paso 5/7] Instalando dependencias y compilando frontend...');
     console.log('📦 Ejecutando npm install...');
     await commandRunner('npm', ['install'], { cwd: projectFullPath, stdio: 'inherit' });
     console.log('📦 Ejecutando npm run build:dev...');
     await commandRunner('npm', ['run', 'build:dev'], { cwd: projectFullPath, stdio: 'inherit' });
-    console.log('✅ Dependencias instaladas y build inicial completado.');
+    console.log('✅ Dependencias del frontend instaladas y build inicial completado.');
 
+    // Paso 6: Tareas específicas del backendType
     if (projectConfig.backendType === 'express') {
       console.log('\n[Paso 6/7] Generando stubs de backend (Controller y Service para Express)...');
       await createController({ domain, feature: names.camel });
       await createService({ domain, feature: names.camel });
       console.log('✅ Stubs de backend generados.');
     } else if (projectConfig.backendType === 'docker') {
-      console.log('\n[Paso 6/7] Proyecto tipo Docker. Omitiendo generación de stubs de backend Express.');
-      // Aquí se podría añadir lógica para actualizar nginx.conf si fuera necesario
-      // Por ejemplo, llamar a una tarea que regenere nginx/default.conf
-      // await regenerateNginxConfigForDocker({ projectRoot }); 
-      console.log('   -> Asegúrate de que tu Dockerfile y Nginx estén configurados para servir este nuevo frontend.');
+      console.log('\n[Paso 6/7] Proyecto tipo Docker. Actualizando configuración de Nginx...');
+      // projectRoot aquí es la raíz del proyecto donde está .frontforge/, no el projectFullPath del frontend
+      await copyNginxConfig({ projectRoot: repoRoot }); 
+      console.log('✅ Configuración de Nginx actualizada para incluir el nuevo frontend.');
     } else {
-      console.log('\n[Paso 6/7] Tipo de backend no es Express. Omitiendo generación de stubs de backend.');
+      console.log('\n[Paso 6/7] Tipo de backend no es Express ni Docker. Omitiendo tareas específicas de backend.');
     }
 
     console.log('\n[Paso 7/7] Proceso finalizado.');
