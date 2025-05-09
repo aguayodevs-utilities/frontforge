@@ -10,7 +10,7 @@ const FRONTEND_LOCATIONS_PLACEHOLDER = '##FRONTEND_LOCATIONS##';
 interface FrontConfigEntry {
   name: string;
   projectFullPath: string; // e.g., fronts/main/dashboard
-  port?: number; // No usado directamente por Nginx, pero parte de la estructura
+  port?: number; 
 }
 
 /**
@@ -27,11 +27,6 @@ interface CopyNginxConfigOptions {
 /**
  * Genera y copia la configuración de Nginx al proyecto del usuario,
  * creando dinámicamente los bloques de location para cada micro-frontend.
- *
- * @async
- * @function copyNginxConfig
- * @param {CopyNginxConfigOptions} options - Opciones de copia.
- * @returns {Promise<void>}
  */
 export async function copyNginxConfig({ projectRoot, nginxConfigDir = 'nginx' }: CopyNginxConfigOptions): Promise<void> {
   const templateSourceDir = path.join(__dirname, '..', '..', 'templates', 'docker');
@@ -57,21 +52,26 @@ export async function copyNginxConfig({ projectRoot, nginxConfigDir = 'nginx' }:
       const frontsArray: FrontConfigEntry[] = await fs.readJson(frontsConfigPath);
       if (Array.isArray(frontsArray)) {
         frontsArray.forEach(front => {
-          // Asegurar que urlBasePath siempre comience con un slash y no termine con uno si no es solo "/"
+          // projectFullPath es "fronts/domain/feature"
+          // urlBasePath debe ser "/domain/feature"
           let urlBasePath = front.projectFullPath.startsWith('fronts/') 
                               ? front.projectFullPath.substring('fronts'.length) 
                               : `/${front.projectFullPath}`; 
           if (!urlBasePath.startsWith('/')) {
             urlBasePath = `/${urlBasePath}`;
           }
-          // Para try_files, la URI del index.html debe ser consistente con la location.
-          // Si location es /main/app1/, el fallback es /main/app1/index.html
-          
-          const aliasPath = front.projectFullPath; 
+
+          // aliasNginxPath es la ruta DENTRO de /usr/share/nginx/html/ (que es la copia de public/)
+          // Si projectFullPath es "fronts/main/app1", y los assets están en "public/main/app1",
+          // entonces aliasNginxPath debe ser "main/app1".
+          const aliasNginxPath = front.projectFullPath.startsWith('fronts/')
+                               ? front.projectFullPath.substring('fronts/'.length)
+                               : front.projectFullPath;
+
 
           frontendLocations += `
     location ${urlBasePath}/ {
-        alias /usr/share/nginx/html/${aliasPath}/;
+        alias /usr/share/nginx/html/${aliasNginxPath}/;
         try_files $uri $uri/ ${urlBasePath.endsWith('/') ? urlBasePath : urlBasePath + '/'}index.html;
     }
 `;
