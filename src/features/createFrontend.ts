@@ -66,7 +66,7 @@ export async function createFrontend(
     // --- 3. Copia y Configuración de Plantillas Base ---
     console.log('\n[Paso 2/7] Copiando y configurando plantillas base...');
     // Ruta a las plantillas frontend dentro de este paquete
-    const templatesDir = path.join(__dirname, '..', '..', 'templates', 'frontend');
+    const templatesDir = path.join(__dirname, '..', 'templates', 'frontend'); // Ajustado para apuntar a dist/templates
     await templateCopier(templatesDir, projectFullPath);
     await configureVite({ projectFullPath }); // Ajusta vite.config.ts
     console.log('✅ Plantillas base copiadas y Vite configurado.');

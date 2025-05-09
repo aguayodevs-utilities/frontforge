@@ -1,6 +1,6 @@
 {
   "name": "@aguayodevs-utilities/frontforge",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "CLI y librería para generar y compilar micro-frontends (Preact) con servidor de express para app monorepositorio.",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -13,7 +13,7 @@
     "copy:templates": "cpx \"templates/**/*\" dist/templates",
     "build": "npm run build:ts && npm run copy:templates",
     "lint": "eslint \"src/**/*.{ts,js}\"",
-    "publish-frontforge": "npm run build && npm publish --access=public"
+    "publish-frontforge": "npm install && npm run build && npm publish --access=public"
   },
   "files": [
     "dist"
