@@ -2,31 +2,36 @@ import path from 'node:path';
 import fs from 'fs-extra';
 import { execa } from 'execa';
 
+const CONFIG_DIR_NAME = '.frontforge';
+const FRONTS_CONFIG_FILE_NAME = 'frontForgeFronts.json';
+
 /**
  * @interface FrontConfigEntry
- * Define la estructura de una entrada en el archivo de configuración `fronts.json`.
+ * Define la estructura de una entrada en el archivo de configuración `.frontforge/frontForgeFronts.json`.
  * Cada entrada representa un micro-frontend y especifica su ubicación.
- * @property {string} [path] - Ruta relativa al micro-frontend desde la carpeta 'fronts/'. Usado si `projectFullPath` no está presente.
- * @property {string} [projectFullPath] - Ruta absoluta o relativa a la raíz del repositorio del micro-frontend. Tiene prioridad sobre `path`.
+ * @property {string} [path] - Ruta relativa al micro-frontend desde la carpeta 'fronts/'. Usado si `projectFullPath` no está presente. (Considerar deprecación)
+ * @property {string} projectFullPath - Ruta relativa a la raíz del repositorio del micro-frontend.
  */
 interface FrontConfigEntry {
-  path?: string;
-  projectFullPath?: string;
+  path?: string; // Considerar deprecación en favor de solo projectFullPath
+  projectFullPath: string; // Hacer este campo obligatorio
 }
 
 /**
- * Compila todos los micro-frontends definidos en el archivo `config/fronts.json`.
+ * Compila todos los micro-frontends definidos en el archivo `.frontforge/frontForgeFronts.json`.
  * Lee la configuración, determina la ruta de cada micro-frontend y ejecuta `npm run build` en su directorio.
  * Muestra logs del proceso de compilación.
  *
  * @async
  * @function buildAll
  * @returns {Promise<void>} Promesa que se resuelve cuando todos los builds han terminado (o fallado).
- * @throws {Error} Si no se encuentra o no se puede leer `config/fronts.json`.
+ * @throws {Error} Si no se encuentra o no se puede leer el archivo de configuración.
  */
 export async function buildAll(): Promise<void> {
   const repoRoot = process.cwd();
-  const frontsConfigPath = path.join(repoRoot, 'config', 'fronts.json');
+  const frontforgeConfigDir = path.join(repoRoot, CONFIG_DIR_NAME);
+  const frontsConfigPath = path.join(frontforgeConfigDir, FRONTS_CONFIG_FILE_NAME);
+  
   console.log(`📄 Leyendo configuración desde: ${frontsConfigPath}`);
 
   let fronts: FrontConfigEntry[];
@@ -52,11 +57,12 @@ export async function buildAll(): Promise<void> {
     // Determinar la ruta del proyecto, dando prioridad a projectFullPath
     if (frontConfig.projectFullPath) {
       projectDir = path.resolve(repoRoot, frontConfig.projectFullPath);
-    } else if (frontConfig.path) {
+    } else if (frontConfig.path) { // Mantener por retrocompatibilidad, pero marcar para deprecación
+      console.warn(`⚠️  Entrada ${index + 1}: La propiedad 'path' está obsoleta, usa 'projectFullPath' en su lugar.`);
       projectDir = path.join(repoRoot, 'fronts', frontConfig.path);
     } else {
-      console.warn(`⚠️  Skipping entrada ${index + 1}: Falta 'path' o 'projectFullPath' en la configuración.`);
-      continue; // Saltar si faltan ambas propiedades
+      console.warn(`⚠️  Skipping entrada ${index + 1}: Falta 'projectFullPath' en la configuración.`);
+      continue; 
     }
 
     // Verificar si el directorio existe
@@ -74,8 +80,6 @@ export async function buildAll(): Promise<void> {
       console.log(`✅ Compilación exitosa para ${relativeProjectPath}`);
     } catch (error: any) {
       console.error(`❌ Error al compilar ${relativeProjectPath}:`, error.message);
-      // Opcional: decidir si continuar con los demás o detenerse
-      // process.exit(1); // Descomentar para detener en el primer error
     }
   }
   console.log('\n✨ Proceso de compilación completado.');

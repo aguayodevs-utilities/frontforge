@@ -1,12 +1,9 @@
 import path from 'node:path';
 import fs from 'fs-extra';
 
-// Importar la definición base de package.json (o definirla aquí si se prefiere)
-// Para evitar duplicación, asumimos que está definida en installDependencies o un archivo compartido
-// Por ahora, la redefinimos aquí para simplicidad, pero idealmente se importaría.
-
+// Definiciones de BASE_PACKAGE_JSON, BASE_TSCONFIG_JSON, etc. (sin cambios)
 const BASE_PACKAGE_JSON = {
-  name: "mi-backend-frontforge", // Nombre por defecto, el usuario debería cambiarlo
+  name: "mi-backend-frontforge", 
   version: "0.1.0",
   description: "Backend inicializado con frontforge",
   main: "dist/index.js",
@@ -18,10 +15,8 @@ const BASE_PACKAGE_JSON = {
     format: "eslint src/**/*.ts --fix"
   },
   keywords: ["express", "frontforge", "backend"],
-  author: "", // Dejar vacío para que el usuario lo llene
-  license: "ISC", // O la licencia deseada
-  // Las dependencias se instalan en installDependencies.ts,
-  // pero las listamos aquí para que el package.json inicial las tenga.
+  author: "", 
+  license: "ISC", 
   dependencies: {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -65,7 +60,8 @@ const BASE_GITIGNORE_CONTENT = `node_modules
 dist
 .env
 *.log
-`;
+.frontforge/
+`; // Añadido .frontforge/
 
 const BASE_ENV_CONTENT = `PORT=3000
 JWT_SECRET=TU_SECRETO_JWT_AQUI_CAMBIAME
@@ -77,20 +73,25 @@ NODE_ENV=local
  * Asegura la existencia de archivos de configuración esenciales en la raíz del proyecto.
  * Crea `package.json`, `tsconfig.json`, `.gitignore` y `.env` con contenido base
  * si no existen previamente en el directorio `projectRoot`.
+ * También crea el directorio `.frontforge`.
  *
  * @async
  * @function ensureRootFiles
  * @param {string} projectRoot - La ruta absoluta al directorio raíz del proyecto.
  * @returns {Promise<void>} - Promesa que se resuelve cuando todos los archivos han sido verificados/creados.
- * @throws {Error} - Si ocurre un error durante la escritura de archivos.
+ * @throws {Error} - Si ocurre un error durante la escritura de archivos o creación de directorios.
  */
 export async function ensureRootFiles(projectRoot: string): Promise<void> {
-  console.log('   -> Asegurando archivos de configuración raíz...');
+  console.log('   -> Asegurando archivos y directorios de configuración raíz...');
   try {
+    // Crear directorio .frontforge
+    const frontforgeDir = path.join(projectRoot, '.frontforge');
+    await fs.ensureDir(frontforgeDir);
+    console.log(`      ✅ Directorio ${path.basename(frontforgeDir)} asegurado.`);
+
     // package.json
     const pkgPath = path.join(projectRoot, 'package.json');
     if (!await fs.pathExists(pkgPath)) {
-      // Usa la definición BASE_PACKAGE_JSON para crear el archivo inicial
       await fs.writeJson(pkgPath, BASE_PACKAGE_JSON, { spaces: 2 });
       console.log('      ✅ package.json creado.');
     } else {
@@ -112,7 +113,15 @@ export async function ensureRootFiles(projectRoot: string): Promise<void> {
       await fs.writeFile(gitignorePath, BASE_GITIGNORE_CONTENT);
       console.log('      ✅ .gitignore creado.');
     } else {
-      console.log('      ℹ️  .gitignore ya existe.');
+      // Si existe, asegurar que .frontforge/ esté presente
+      let content = await fs.readFile(gitignorePath, 'utf-8');
+      if (!content.includes('.frontforge/')) {
+        content += '\n.frontforge/\n';
+        await fs.writeFile(gitignorePath, content);
+        console.log('      📝 .frontforge/ añadido a .gitignore existente.');
+      } else {
+        console.log('      ℹ️  .gitignore ya existe y contiene .frontforge/.');
+      }
     }
 
     // .env (ejemplo)
@@ -124,9 +133,9 @@ export async function ensureRootFiles(projectRoot: string): Promise<void> {
       console.log('      ℹ️  .env ya existe.');
     }
 
-    console.log('   ✅ Archivos de configuración raíz asegurados.');
+    console.log('   ✅ Archivos y directorios de configuración raíz asegurados.');
   } catch (error: any) {
     console.error(`   ❌ Error al asegurar archivos raíz en ${projectRoot}:`, error.message);
-    throw error; // Relanzar para detener el proceso principal
+    throw error; 
   }
 }

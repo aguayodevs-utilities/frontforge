@@ -12,7 +12,7 @@ const DIRS_TO_CREATE: string[] = [
   'src/classes/http/error',
   'src/interfaces',
   'src/types',
-  'config',
+  // 'config', // Eliminado, ahora se maneja .frontforge/
   'src/routes',
   'public'
 ];
