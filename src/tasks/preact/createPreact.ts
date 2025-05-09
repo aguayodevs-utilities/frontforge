@@ -1,6 +1,4 @@
 import { commandRunner } from '../../utils/commandRunner';
-import fs from 'fs'; // No usado actualmente, considerar eliminar
-import path from 'node:path'; // No usado actualmente, considerar eliminar
 
 /**
  * @interface CreatePreactOptions
@@ -61,12 +59,15 @@ export async function createPreact({
     // --- 4. Instalación de Dependencias de Runtime Base ---
     console.log('📦 Instalando dependencias de runtime base...');
     const runtimeDeps = [
-      'dotenv',             // Para variables de entorno
-      '@emotion/react',     // Dependencias para MUI
-      '@emotion/styled',
-      '@mui/icons-material',
-      '@mui/material',
-      'axios',              // Para peticiones HTTP
+      '@aguayodevs-utilities/preact-shared@^1.0.2',
+      'dotenv',
+      '@emotion/react@^11.14.0',
+      '@emotion/styled@^11.14.0',
+      '@fontsource/roboto@^5.2.5',
+      '@mui/icons-material@^7.0.2',
+      '@mui/material@^7.0.2',
+      'axios@^1.8.4',
+      'react-toastify@^11.0.5'
     ];
     await commandRunner('npm', ['install', ...runtimeDeps], { cwd: projectFullPath, stdio: 'inherit' });
     console.log(`✅ Dependencias de runtime instaladas: ${runtimeDeps.join(', ')}`);

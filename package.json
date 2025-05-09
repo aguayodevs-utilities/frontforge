@@ -27,13 +27,14 @@
     "express"
   ],
   "dependencies": {
-    "@aguayodevs-utilities/preact-shared": "^1.0.1",
+    "@aguayodevs-utilities/preact-shared": "^1.0.2",
     "change-case": "^5.4.4",
     "execa": "^9.5.2",
     "fs-extra": "^11.3.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@types/node": "^20.14.10",
     "@types/fs-extra": "^11.0.4",
     "@types/yargs": "^17.0.33",
     "@typescript-eslint/eslint-plugin": "^8.32.0",
