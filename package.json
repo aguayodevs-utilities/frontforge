@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build:ts": "tsc --build tsconfig.build.json",
-    "copy:templates": "cpx \"templates/**/*\" dist/templates",
+    "copy:templates": "node scripts/copy-templates.js",
     "build": "npm run build:ts && npm run copy:templates",
     "lint": "eslint \"src/**/*.{ts,js}\"",
     "publish-frontforge": "npm install && npm run build && npm publish --access=public"
@@ -35,13 +35,12 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^8.2.6",
+    "@types/node": "^20.14.10",
     "@types/yargs": "^17.0.33",
     "@typescript-eslint/eslint-plugin": "^8.32.0",
     "@typescript-eslint/parser": "^8.32.0",
-    "cpx": "^1.2.1",
     "eslint": "^8.57.1",
     "globals": "^16.1.0",
     "ts-node": "^10.9.2",
