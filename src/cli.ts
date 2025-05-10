@@ -10,6 +10,7 @@ import { createController } from './tasks/express/controller';
 import { createService } from './tasks/express/service';
 import { generateDocs } from './features/generateDocs'; // Importar la nueva función
 import { initializeLinting } from './features/initializeLinting'; // Importar la nueva función
+import { addEnvironmentFile } from './features/addEnvironmentFile'; // Importar la nueva función
  
 const CONFIG_DIR_NAME = '.frontforge';
 const PROJECT_CONFIG_FILE_NAME = 'config.json';
@@ -31,6 +32,15 @@ interface CreateArgs extends ArgumentsCamelCase {
 interface InitArgs extends ArgumentsCamelCase {
   'skip-install'?: boolean;
   'with-logger'?: boolean; // Añadir opción para logger
+}
+
+/**
+ * @interface EnvAddArgs
+ * Argumentos esperados para el comando 'env:add'.
+ * Extiende ArgumentsCamelCase de yargs.
+ */
+interface EnvAddArgs extends ArgumentsCamelCase {
+  environment: string;
 }
 
 
@@ -148,6 +158,28 @@ yargs(hideBin(process.argv))
     initializeLinting
    )
   /**
+   * Comando para añadir un archivo .env por entorno.
+   * Uso: frontforge env:add <environment>
+   */
+  .command<EnvAddArgs>( // Usar la nueva interfaz de argumentos
+    'env:add <environment>',
+    'Añade un archivo .env.<environment> para configurar variables por entorno.',
+    (y) => // Builder para argumentos posicionales
+        y.positional('environment', {
+            describe: 'Nombre del entorno (ej. staging, production)',
+            type: 'string',
+            demandOption: true,
+        }),
+    /**
+     * Handler para el comando 'env:add'. Llama a addEnvironmentFile.
+     * @param {EnvAddArgs} argv - Argumentos parseados por yargs.
+     */
+    (argv) => {
+        console.log(`-> Ejecutando addEnvironmentFile para entorno: ${argv.environment}...`);
+        addEnvironmentFile(argv.environment); // Pasar el nombre del entorno
+    }
+   )
+  /**
    * Comando para inicializar una estructura de proyecto backend compatible.
    * Uso: frontforge init [--skip-install]
    */
@@ -177,7 +209,7 @@ yargs(hideBin(process.argv))
         });
     }
    )
-.demandCommand(1, 'Debes especificar un comando (init, create, build, doc o lint:init).') // Actualizar mensaje
+.demandCommand(1, 'Debes especificar un comando (init, create, build, doc, lint:init o env:add).') // Actualizar mensaje
 .strict()
   .help()
   .alias('help', 'h')

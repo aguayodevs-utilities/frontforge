@@ -78,9 +78,28 @@ export const createController = async ({
     fs.ensureDirSync(controllersDir);
     // Escribe el contenido procesado en el archivo del controlador
     fs.writeFileSync(controllerFilePath, controllerContent);
-
-    // Leer el archivo de configuración de controladores
-    const controllers = await fs.readJson(controllersConfigPath) as any[];
+ 
+     // --- 7. Escritura del Archivo de Test ---
+     console.log(`   -> Generando archivo de test para el controlador...`);
+     const controllerTestTplPath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'controller', 'controller.test.ts.tpl');
+     const controllerTestFilePath = path.join(controllersDir, `${feature}.controller.test.ts`);
+ 
+     if (fs.existsSync(controllerTestFilePath)) {
+        console.warn(`   ⚠️  El archivo de test para el controlador "${feature}" ya existe. Omitiendo creación.`);
+     } else {
+        let controllerTestContent = fs.readFileSync(controllerTestTplPath, 'utf8');
+ 
+        // Realizar reemplazos de placeholders en el archivo de test
+        controllerTestContent = controllerTestContent
+          .replace(/\${FeatureCamel}/g, feature) // Reemplaza con el nombre de la feature
+          .replace(/\${DomainPath}/g, domain); // Reemplaza con la ruta del dominio
+ 
+        fs.writeFileSync(controllerTestFilePath, controllerTestContent);
+        console.log(`   ✅ Archivo de test generado: ${controllerTestFilePath}`);
+     }
+ 
+     // Leer el archivo de configuración de controladores
+     const controllers = await fs.readJson(controllersConfigPath) as any[];
 
     // Añadir la información del nuevo controlador
     controllers.push({

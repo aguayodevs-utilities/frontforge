@@ -35,9 +35,14 @@ const BASE_PACKAGE_JSON = {
     "eslint": "^8.57.0",
     "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "jest": "^29.7.0", // Añadir Jest
+    "@types/jest": "^29.5.12", // Añadir tipos de Jest
+    "supertest": "^7.0.0", // Añadir Supertest
+    "@types/supertest": "^6.0.2", // Añadir tipos de Supertest
+    "ts-jest": "^29.1.5" // Añadir ts-jest para usar Jest con TypeScript
      // Añadir más devDependencies base si son necesarias
-  }
+   }
 };
 
 

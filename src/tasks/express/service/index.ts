@@ -84,9 +84,27 @@ export const createService = async ({
     fs.ensureDirSync(servicesDir);
     // Escribe el contenido procesado en el archivo del servicio
     fs.writeFileSync(serviceFilePath, serviceContent);
-
-    // Leer el archivo de configuración de servicios
-    const services = await fs.readJson(servicesConfigPath) as any[];
+ 
+     // --- 7. Escritura del Archivo de Test ---
+     console.log(`   -> Generando archivo de test para el servicio...`);
+     const serviceTestTplPath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'service.test.ts.tpl');
+     const serviceTestFilePath = path.join(servicesDir, `${feature}.service.test.ts`);
+ 
+     if (fs.existsSync(serviceTestFilePath)) {
+        console.warn(`   ⚠️  El archivo de test para el servicio "${feature}" ya existe. Omitiendo creación.`);
+     } else {
+        let serviceTestContent = fs.readFileSync(serviceTestTplPath, 'utf8');
+ 
+        // Realizar reemplazos de placeholders en el archivo de test
+        serviceTestContent = serviceTestContent
+          .replace(/\${ServiceName}/g, serviceName); // Reemplaza con el nombre de la clase de servicio
+ 
+        fs.writeFileSync(serviceTestFilePath, serviceTestContent);
+        console.log(`   ✅ Archivo de test generado: ${serviceTestFilePath}`);
+     }
+ 
+     // Leer el archivo de configuración de servicios
+     const services = await fs.readJson(servicesConfigPath) as any[];
 
     // Añadir la información del nuevo servicio
     services.push({
