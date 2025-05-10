@@ -8,7 +8,9 @@ import { buildAll }       from './features/buildAll';
 import { initProject }    from './features/initProject';
 import { createController } from './tasks/express/controller';
 import { createService } from './tasks/express/service';
-
+import { generateDocs } from './features/generateDocs'; // Importar la nueva función
+import { initializeLinting } from './features/initializeLinting'; // Importar la nueva función
+ 
 const CONFIG_DIR_NAME = '.frontforge';
 const PROJECT_CONFIG_FILE_NAME = 'config.json';
 interface ProjectConfig {
@@ -27,8 +29,8 @@ interface CreateArgs extends ArgumentsCamelCase {
  * Extiende ArgumentsCamelCase de yargs.
  */
 interface InitArgs extends ArgumentsCamelCase {
-  // Podrían añadirse opciones como --skip-install
   'skip-install'?: boolean;
+  'with-logger'?: boolean; // Añadir opción para logger
 }
 
 
@@ -120,6 +122,32 @@ yargs(hideBin(process.argv))
     buildAll
    )
   /**
+   * Comando para generar documentación Swagger/OpenAPI.
+   * Uso: frontforge doc
+   */
+  .command(
+    'doc',
+    'Genera la documentación Swagger/OpenAPI para el proyecto backend Express.',
+    () => {}, // No necesita builder por ahora
+    /**
+     * Handler para el comando 'doc'. Llama a generateDocs.
+     */
+    generateDocs
+   )
+  /**
+   * Comando para inicializar configuración de Linting, Prettier y Husky.
+   * Uso: frontforge lint:init
+   */
+  .command(
+    'lint:init',
+    'Inicializa la configuración de ESLint, Prettier y Husky para el proyecto.',
+    () => {}, // No necesita builder por ahora
+    /**
+     * Handler para el comando 'lint:init'. Llama a initializeLinting.
+     */
+    initializeLinting
+   )
+  /**
    * Comando para inicializar una estructura de proyecto backend compatible.
    * Uso: frontforge init [--skip-install]
    */
@@ -131,6 +159,11 @@ yargs(hideBin(process.argv))
             type: 'boolean',
             describe: 'Omitir la instalación automática de dependencias npm.',
             default: false,
+        })
+        .option('with-logger', { // Añadir opción --with-logger
+            type: 'boolean',
+            describe: 'Incluir middleware de logging estructurado (Pino).',
+            default: false,
         }),
     /**
      * Handler para el comando 'init'. Llama a initProject.
@@ -138,11 +171,14 @@ yargs(hideBin(process.argv))
      */
     (argv) => {
         console.log("-> Ejecutando initProject...");
-        initProject({ installDeps: !argv['skip-install'] }); // Pasar opción a la función
+        initProject({
+          installDeps: !argv['skip-install'],
+          withLogger: argv['with-logger'] // Pasar opción withLogger
+        });
     }
    )
-  .demandCommand(1, 'Debes especificar un comando (init, create o build).') // Actualizar mensaje
-  .strict()
+.demandCommand(1, 'Debes especificar un comando (init, create, build, doc o lint:init).') // Actualizar mensaje
+.strict()
   .help()
   .alias('help', 'h')
   .version()

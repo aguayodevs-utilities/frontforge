@@ -46,9 +46,31 @@ export async function copyBaseTemplates(projectRoot: string): Promise<void> {
       throw new Error(`Directorio de plantillas base no encontrado: ${templateSourceDir}`);
     }
 
-    await templateCopier(templateSourceDir, destinationSrcDir);
+    // Leer el contenido del directorio de plantillas
+    const templateItems = await fs.readdir(templateSourceDir);
 
-    console.log('   ✅ Archivos base copiados exitosamente.');
+    // Filtrar index.ts
+    const itemsToCopy = templateItems.filter(item => item !== 'index.ts');
+
+    // Copiar los archivos restantes usando templateCopier
+    for (const item of itemsToCopy) {
+      const sourcePath = path.join(templateSourceDir, item);
+      const destPath = path.join(destinationSrcDir, item);
+      // templateCopier espera directorios de origen y destino, no archivos individuales.
+      // Necesito ajustar esto o usar fs.copy directamente para cada archivo/directorio filtrado.
+      // Usaré fs.copy para mayor control.
+
+      const stat = await fs.stat(sourcePath);
+      if (stat.isDirectory()) {
+        // Si es un directorio, copiar recursivamente
+        await fs.copy(sourcePath, destPath);
+      } else {
+        // Si es un archivo, copiar
+        await fs.copy(sourcePath, destPath);
+      }
+    }
+
+    console.log('   ✅ Archivos base (excepto index.ts) copiados exitosamente.');
 
   } catch (error: any) {
     console.error(`   ❌ Error al copiar plantillas base a ${destinationSrcDir}:`, error.message);

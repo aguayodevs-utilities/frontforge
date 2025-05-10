@@ -11,6 +11,7 @@ import { commandRunner } from '../../utils/commandRunner';
 interface InstallDependenciesOptions {
   projectRoot: string;
   forceInstall?: boolean;
+  withLogger?: boolean; // Nueva opción para incluir logger
 }
 
 // Definición del package.json base con las dependencias necesarias
@@ -52,10 +53,22 @@ const BASE_PACKAGE_JSON = {
  * @param {InstallDependenciesOptions} options - Opciones de instalación.
  * @returns {Promise<void>} - Promesa que se resuelve cuando la instalación finaliza o se omite.
  */
-export async function installDependencies({ projectRoot, forceInstall = false }: InstallDependenciesOptions): Promise<void> {
+export async function installDependencies({ projectRoot, forceInstall = false, withLogger = false }: InstallDependenciesOptions): Promise<void> {
   const nodeModulesPath = path.join(projectRoot, 'node_modules');
 
+  // Dependencias y devDependencies base
+  const baseDeps = { ...BASE_PACKAGE_JSON.dependencies };
+  const baseDevDeps = { ...BASE_PACKAGE_JSON.devDependencies };
+
+  // Añadir dependencias del logger si la opción está activada
+  if (withLogger) {
+    console.log('   ℹ️  Incluyendo dependencias para logging estructurado (Pino).');
+    baseDeps['pino'] = '^9.2.0'; // Usar una versión reciente
+    baseDevDeps['@types/pino'] = '^7.0.5'; // Usar una versión reciente compatible
+  }
+
   // Verificar si node_modules ya existe y no se fuerza la instalación
+
   if (!forceInstall && await fs.pathExists(nodeModulesPath)) {
       console.log(`   ℹ️  Directorio node_modules ya existe. Omitiendo instalación de dependencias (usa --force si es necesario).`);
       return;
@@ -63,13 +76,13 @@ export async function installDependencies({ projectRoot, forceInstall = false }:
 
   console.log('   -> Instalando dependencias base del backend (puede tardar)...');
   try {
-    // Obtener listas de dependencias desde la configuración base interna
-    const depsToInstall = Object.keys(BASE_PACKAGE_JSON.dependencies || {});
-    const devDepsToInstall = Object.keys(BASE_PACKAGE_JSON.devDependencies || {});
+    // Obtener listas de dependencias a instalar (base + condicionales)
+    const depsToInstall = Object.keys(baseDeps);
+    const devDepsToInstall = Object.keys(baseDevDeps);
 
     let installedSomething = false;
 
-    // Instalar dependencias de producción base
+    // Instalar dependencias de producción
     if (depsToInstall.length > 0) {
       console.log(`      -> Instalando dependencias: ${depsToInstall.join(', ')}`);
       await commandRunner('npm', ['install', ...depsToInstall], { cwd: projectRoot, stdio: 'inherit' });

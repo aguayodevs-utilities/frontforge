@@ -28,9 +28,16 @@ console.log(`ℹ️  Sirviendo archivos estáticos desde: ${staticPath}`); // Ba
 app.use(express.static(staticPath));
 
 // --- Rutas de API ---
-app.get('/api/health', (req: Request, res: Response) => {
-  // Endpoint básico para verificar que la API está viva
-  res.status(200).json({ status: 'ok', message: 'API Backend funcionando!' });
+// Endpoints de Health y Readiness para orquestadores (ej. Kubernetes)
+app.get('/healthz', (req: Request, res: Response) => {
+  // Endpoint de Health: Indica si la aplicación está viva
+  res.status(200).json({ status: 'ok', message: 'API Backend is healthy' });
+});
+
+app.get('/readyz', (req: Request, res: Response) => {
+  // Endpoint de Readiness: Indica si la aplicación está lista para manejar tráfico
+  // TODO: Implementar lógica de readiness real (ej. conexión a DB, otros servicios)
+  res.status(200).json({ status: 'ok', message: 'API Backend is ready' });
 });
 
 // --- Importar y Usar Routers de Dominios ---

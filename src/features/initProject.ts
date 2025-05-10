@@ -6,9 +6,10 @@ import {
   createDirectoryStructure as createExpressDirectoryStructure,
   copyBaseTemplates as copyExpressBaseTemplates,
   ensureRootFiles as ensureExpressRootFiles,
-  installDependencies as installExpressDependencies 
+  installDependencies as installExpressDependencies,
+  copyAndConfigureIndex // Importar la nueva tarea
 } from '../tasks/init-express';
-
+ 
 // Importar tareas desde el nuevo módulo init-docker
 import {
   generateDockerfile,
@@ -23,8 +24,9 @@ import {
  * @property {boolean} [forceInstall=false] - Si es true, fuerza la instalación de dependencias incluso si node_modules existe.
  */
 interface InitProjectOptions {
-  installDeps?: boolean; 
-  forceInstall?: boolean; 
+  installDeps?: boolean;
+  forceInstall?: boolean;
+  withLogger?: boolean; // Añadir opción para logger
 }
 
 const FRAMEWORK_CHOICES = [
@@ -58,8 +60,8 @@ async function createFrontforgeConfig(projectRoot: string, backendType: 'express
  * @throws {Error} Si ocurre un error durante alguna de las tareas críticas.
  */
 export async function initProject(options: InitProjectOptions = {}): Promise<void> {
-  const { installDeps = true, forceInstall = false } = options; 
-  const projectRoot = process.cwd(); 
+  const { installDeps = true, forceInstall = false, withLogger = false } = options; // Desestructurar withLogger
+  const projectRoot = process.cwd();
 
   console.log('🚀 Bienvenido a la inicialización de proyectos de Frontforge!');
 
@@ -87,8 +89,11 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
       await createExpressDirectoryStructure(projectRoot); // Esto crea src, public, etc.
       await createFrontforgeConfig(projectRoot, 'express'); // Crea .frontforge/config.json
 
-      console.log('\n[Paso 2/5] Copiando archivos base desde plantillas...');
+      console.log('\n[Paso 2/5] Copiando archivos base desde plantillas (excepto index.ts)...');
       await copyExpressBaseTemplates(projectRoot);
+      
+      console.log('\n[Paso 2.5/5] Copiando y configurando index.ts...');
+      await copyAndConfigureIndex({ projectRoot, withLogger }); // Usar la nueva tarea para index.ts
 
       console.log('\n[Paso 3/5] Creando/Asegurando archivos de configuración raíz...');
       // ensureExpressRootFiles también crea .frontforge/, pero createFrontforgeConfig ya lo hizo y añadió config.json
@@ -97,7 +102,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
       if (installDeps) {
         if (await fs.pathExists(path.join(projectRoot, 'package.json'))) {
           console.log('\n[Paso 4/5] Instalando dependencias...');
-          await installExpressDependencies({ projectRoot, forceInstall });
+          await installExpressDependencies({ projectRoot, forceInstall, withLogger }); // Pasar opción withLogger
         } else {
           console.warn('\n[Paso 4/5] ⚠️  No se encontró package.json. Omitiendo instalación de dependencias.');
         }

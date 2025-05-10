@@ -32,7 +32,8 @@
     "execa": "^9.5.2",
     "fs-extra": "^11.3.0",
     "inquirer": "^8.2.6",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "swagger-jsdoc": "^6.2.8"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
