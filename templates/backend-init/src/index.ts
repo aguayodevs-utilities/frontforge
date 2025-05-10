@@ -52,19 +52,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // --- Manejador Global de Errores ---
 // Este middleware captura todos los errores pasados por 'next(error)'
 app.use((err: Error | HttpException, req: Request, res: Response, next: NextFunction) => {
-    // Asegurarse de que siempre sea un objeto ExceptionObject compatible
-    const errorDetails: ExceptionObject = {
-        message: err.message || 'Error interno del servidor',
-        // Si es HttpException, usa su statusCode, sino es 500
-        statusCode: (err instanceof HttpException) ? err.statusCode : 500,
-        // Añadir detalles solo si es HttpException
-        filePath: (err instanceof HttpException) ? err.filePath : undefined,
-        errorData: (err instanceof HttpException) ? err.errorData : undefined,
-        // Incluir stack trace solo en desarrollo/local para depuración
-        stack: process.env.NODE_ENV === 'local' ? err.stack : undefined
-    };
     // Utiliza la clase HttpErrorHandler para loguear y enviar la respuesta
-    new HttpErrorHandler(errorDetails, res);
+    // La clase HttpErrorHandler internamente maneja la creación del objeto de detalles del error.
+    new HttpErrorHandler(err, res);
 });
 
 
