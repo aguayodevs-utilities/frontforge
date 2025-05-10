@@ -62,7 +62,7 @@ export class GenericToken {
             this.payload = decodedToken as JwtPayload; // Type assertion
         } catch (error: any) {
             this.errorObject.valid = false; // Marcar como inválido
-            this.errorObject.error.message = \`Invalid or expired token: \${error.message}\`;
+            this.errorObject.error.message = `Invalid or expired token: ${error.message}`;
             this.errorObject.error.errorData = { errorName: error.name };
             throw new HttpException(this.errorObject.error);
         }

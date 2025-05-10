@@ -3,21 +3,28 @@
 Herramienta CLI y librería Node.js diseñada para **optimizar el desarrollo de micro-frontends** basados en [Preact](https://preactjs.com/) y [Vite](https://vitejs.dev/), facilitando la **inicialización de estructuras de backend** compatibles y la **generación de stubs** para arquitecturas basadas en [Express](https://expressjs.com/). Ideal para entornos de monorepositorio, `frontforge` agiliza la creación y gestión de nuevas características.
 
 ## ✨ Características Principales
-
+ 
+`frontforge` ofrece un conjunto de funcionalidades para agilizar el desarrollo en arquitecturas de micro-frontends y backends Express:
+ 
 *   **Inicialización de Proyectos Backend**: Configura la estructura base para diferentes tipos de proyectos backend, actualmente soportando:
-    *   **Node.js (Express)**: Establece una estructura de directorios estándar, incluye clases de utilidad esenciales (manejo de tokens, validación, saneamiento, excepciones HTTP, manejo de errores), archivos de configuración clave (`package.json`, `tsconfig.json`, `.env`, `.gitignore`) y archivos de configuración específicos para Express (`controllers.json`, `services.json`). Opcionalmente, instala dependencias iniciales.
+    *   **Node.js (Express)**: Establece una estructura de directorios estándar, incluye clases de utilidad esenciales (manejo de tokens, validación, saneamiento, excepciones HTTP, manejo de errores), archivos de configuración clave (`package.json`, `tsconfig.json`, `.env`, `.gitignore`) y archivos de configuración específicos para Express (`controllers.json`, `services.json`). Permite incluir opcionalmente middleware de logging estructurado (Pino).
     *   **Docker (Servidor de Estáticos con Nginx)**: Genera archivos `Dockerfile`, `docker-compose.yml` y una configuración base de Nginx (`default.conf`) para servir micro-frontends estáticos.
 *   **Generación Rápida de Artefactos**: Permite la creación ágil de:
     *   **Micro-frontends Preact**: Genera la estructura completa de un nuevo micro-frontend Preact con Vite, incluyendo configuración automática de rutas de compilación, scripts de desarrollo y build, e integración con una librería de componentes compartidos (`@aguayodevs-utilities/preact-shared`).
-    *   **Stubs de Backend Express**: Crea archivos básicos de Controlador y Servicio Express dentro de la estructura de backend inicializada, siguiendo convenciones de dominio/característica.
+    *   **Stubs de Backend Express**: Crea archivos básicos de Controlador y Servicio Express dentro de la estructura de backend inicializada, siguiendo convenciones de dominio/característica. **Genera automáticamente archivos de test básicos** para estos stubs (usando Jest y Supertest).
 *   **Configuración Automatizada**:
     *   Configura automáticamente `vite.config.ts` en los micro-frontends generados para alinearse con la estructura de monorepositorio (rutas `base` y `outDir`).
     *   Actualiza el `package.json` del micro-frontend con scripts `dev` (con puerto configurable) y `build:dev`.
     *   Registra cada nuevo micro-frontend en un archivo centralizado (`.frontforge/frontForgeFronts.json`) utilizado para la compilación global.
     *   Registra los stubs de controlador y servicio Express generados en archivos de configuración específicos (`.frontforge/express/controllers.json` y `.frontforge/express/services.json`).
+    *   Añade **endpoints básicos de Health (`/healthz`) y Readiness (`/readyz`)** a la plantilla de aplicación Express.
+    *   Configura **aliases de módulos en `tsconfig.json`** y añade la integración de `module-alias` para simplificar las importaciones en proyectos Express.
+    *   Proporciona un comando para generar **archivos `.env` por entorno** (`frontforge env:add`).
+    *   Ofrece un comando para inicializar la configuración de **Linting (ESLint), Formatting (Prettier) y Git Hooks (Husky)** (`frontforge lint:init`).
+*   **Generación de Documentación**: Permite generar una especificación **Swagger/OpenAPI** básica a partir de comentarios en el código backend (`frontforge doc`).
 *   **Compilación Centralizada**: Facilita la compilación de todos los micro-frontends registrados en `.frontforge/frontForgeFronts.json` mediante la ejecución de `npm run build` en el directorio de cada proyecto.
 *   **Flexibilidad de Uso**: Puede ser utilizado como una herramienta CLI global/npx o importado como librería Node.js para scripts personalizados.
-
+ 
 ## 📦 Instalación
 
 `frontforge` está diseñado para ser ejecutado desde la **raíz de tu monorepositorio** (o en un directorio vacío para el comando `init`). Puedes usarlo directamente con `npx` o instalarlo globalmente:
@@ -52,27 +59,30 @@ Los comandos `create` y `build` operan bajo la expectativa de una estructura de 
 ## 🚀 Uso de la Interfaz de Línea de Comandos (CLI)
 
 ### 1. Inicializar un Proyecto (`init`)
-
+ 
 Este comando configura la estructura base para un nuevo proyecto compatible con `frontforge`. Debe ejecutarse en un **directorio vacío**.
-
+ 
 ```bash
-npx @aguayodevs-utilities/frontforge init [--skip-install]
+npx @aguayodevs-utilities/frontforge init [--skip-install] [--with-logger]
 ```
-
+ 
 Se te presentará una lista para seleccionar el tipo de proyecto a inicializar:
-
+ 
 *   **Node.js (Express Backend)**:
     *   Crea la estructura de directorios (`src/classes`, `src/interfaces`, `src/types`, `public`, `.frontforge`).
-    *   Genera archivos base para Express y utilidades.
+    *   Genera archivos base para Express y utilidades, incluyendo **endpoints de Health (`/healthz`) y Readiness (`/readyz`)**.
     *   Crea archivos de configuración `.frontforge/express/controllers.json` y `.frontforge/express/services.json`.
-    *   Crea/actualiza archivos raíz (`package.json`, `tsconfig.json`, `.gitignore`, `.env`).
-    *   Instala dependencias (`express`, `dotenv`, `cors`, `jsonwebtoken`, etc.) a menos que se use la opción `--skip-install`.
+    *   Crea/actualiza archivos raíz (`package.json`, `tsconfig.json` con **configuración de `paths`**, `.gitignore`, `.env`).
+    *   Instala dependencias base (`express`, `dotenv`, `cors`, `jsonwebtoken`, `module-alias`, etc.) y dependencias de desarrollo (`typescript`, `ts-node`, `nodemon`, `jest`, `supertest`, `ts-jest`, etc.) a menos que se use la opción `--skip-install`.
+    *   **Opcionalmente**, instala dependencias para logging estructurado (`pino`, `pino-http`) si se usa la opción `--with-logger`.
 *   **Docker (Servidor de Estáticos con Nginx)**:
     *   Crea el directorio `.frontforge`.
     *   Genera `Dockerfile`, `docker-compose.yml` y `nginx/default.conf`.
-
-La opción `--skip-install` (o `-s`) omite la instalación automática de dependencias npm.
-
+ 
+Opciones:
+*   `--skip-install` (o `-s`): Omite la instalación automática de dependencias npm.
+*   `--with-logger`: Incluye middleware de logging estructurado (Pino) en el proyecto Express inicializado.
+ 
 ### 2. Crear un Artefacto (`create`)
 
 Genera un nuevo micro-frontend Preact, un servicio Express o un controlador Express. Ejecuta este comando desde la **raíz de tu monorepositorio**.
@@ -100,16 +110,48 @@ npx @aguayodevs-utilities/frontforge create service users/auth
 npx @aguayodevs-utilities/frontforge create controller products/inventory
 ```
 
-### 3. Compilar Todos los Micro-Frontends (`build`)
-
+### 3. Generar Documentación (`doc`)
+ 
+Genera la documentación Swagger/OpenAPI para el proyecto backend Express a partir de comentarios en el código. Ejecuta este comando desde la **raíz de tu proyecto backend**.
+ 
+```bash
+npx @aguayodevs-utilities/frontforge doc
+```
+ 
+Este comando lee los archivos en `src/controllers` y `src/services` (y otros directorios configurados) buscando comentarios JSDoc/TSDoc compatibles con Swagger y genera un archivo `docs/openapi.yaml`.
+ 
+### 4. Inicializar Configuración de Linting (`lint:init`)
+ 
+Configura ESLint, Prettier y Husky para asegurar la calidad y homogeneidad del código mediante hooks de Git. Ejecuta este comando desde la **raíz de tu proyecto**.
+ 
+```bash
+npx @aguayodevs-utilities/frontforge lint:init
+```
+ 
+Este comando añade las dependencias necesarias (`eslint`, `prettier`, `husky`, `lint-staged`, etc.) al `package.json`, configura el script `prepare` para Husky, añade la configuración de `lint-staged` y copia archivos de configuración estándar (`.eslintrc.json`, `.prettierrc.js`).
+ 
+### 5. Añadir Archivo .env por Entorno (`env:add`)
+ 
+Crea un archivo `.env.<environment>` para gestionar variables de entorno específicas para diferentes entornos (staging, production, etc.). Ejecuta este comando desde la **raíz de tu proyecto**.
+ 
+```bash
+npx @aguayodevs-utilities/frontforge env:add <environment>
+```
+ 
+*   `<environment>`: Nombre del entorno (ej. `staging`, `production`). (Requerido)
+ 
+Este comando crea el archivo `.env.<environment>` con contenido base si no existe. Para cargar estas variables en tu aplicación Express, puedes modificar tu punto de entrada (`src/index.ts`) para usar `dotenv.config({ path: \`.env.\${process.env.NODE_ENV}\` });` basado en la variable de entorno `NODE_ENV`.
+ 
+### 6. Compilar Todos los Micro-Frontends (`build`)
+ 
 Compila todos los micro-frontends listados en el archivo `.frontforge/frontForgeFronts.json`. Ejecuta este comando desde la **raíz de tu monorepositorio**.
-
+ 
 ```bash
 npx @aguayodevs-utilities/frontforge build
 ```
-
+ 
 Este comando itera sobre cada entrada en el archivo de configuración de frontends y ejecuta `npm run build` en el directorio especificado por `projectFullPath`.
-
+ 
 ## 🛠️ API Programática
 
 `frontforge` puede ser importado y utilizado como una librería en tus scripts Node.js para automatizar tareas o integrarlo en flujos de trabajo personalizados.

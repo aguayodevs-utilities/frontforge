@@ -21,7 +21,8 @@ const BASE_PACKAGE_JSON = {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "module-alias": "^2.2.3" // Añadir module-alias a dependencias base
     // Añadir más dependencias base si son necesarias
   },
   devDependencies: {
@@ -62,14 +63,16 @@ export async function installDependencies({ projectRoot, forceInstall = false, w
   const nodeModulesPath = path.join(projectRoot, 'node_modules');
 
   // Dependencias y devDependencies base
-  const baseDeps = { ...BASE_PACKAGE_JSON.dependencies };
-  const baseDevDeps = { ...BASE_PACKAGE_JSON.devDependencies };
+  const baseDeps: Record<string, string> = { ...BASE_PACKAGE_JSON.dependencies };
+  const baseDevDeps: Record<string, string> = { ...BASE_PACKAGE_JSON.devDependencies };
 
   // Añadir dependencias del logger si la opción está activada
   if (withLogger) {
     console.log('   ℹ️  Incluyendo dependencias para logging estructurado (Pino).');
     baseDeps['pino'] = '^9.2.0'; // Usar una versión reciente
-    baseDevDeps['@types/pino'] = '^7.0.5'; // Usar una versión reciente compatible
+    baseDeps['pino-http'] = 'latest'; // Añadir pino-http (última versión)
+    baseDevDeps['@types/pino'] = 'latest'; // Usar una versión reciente compatible
+    baseDevDeps['@types/pino-http'] = 'latest'; // Añadir tipos para pino-http (última versión)
   }
 
   // Verificar si node_modules ya existe y no se fuerza la instalación
@@ -81,7 +84,7 @@ export async function installDependencies({ projectRoot, forceInstall = false, w
 
   console.log('   -> Instalando dependencias base del backend (puede tardar)...');
   try {
-    // Obtener listas de dependencias a instalar (base + condicionales)
+    // Obtener listas de dependencias a instalar (base + condicionales) *después* de añadir las condicionales
     const depsToInstall = Object.keys(baseDeps);
     const devDepsToInstall = Object.keys(baseDevDeps);
 
