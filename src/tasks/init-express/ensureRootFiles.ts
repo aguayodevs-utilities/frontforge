@@ -28,6 +28,7 @@ const BASE_PACKAGE_JSON = {
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.14.11",
+    "@types/express-session": "^1.17.13",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",
     "cross-env": "^7.0.3",

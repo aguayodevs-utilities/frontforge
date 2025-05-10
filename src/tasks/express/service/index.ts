@@ -61,10 +61,10 @@ export const createService = async ({
     const httpExceptionImportPath = path.join(projectRoot, 'src', 'classes', 'http', 'HttpException'); // Sin .ts para import
 
     // Calcula la ruta relativa desde el directorio del servicio al GenericToken
-    const relativePathGenericToken = path.relative(path.dirname(serviceFilePath), genericTokenImportPath)
+    const relativePathGenericToken = path.relative(servicesDir, genericTokenImportPath)
                                        .split(path.sep).join('/'); // Normaliza a /
     // Calcula la ruta relativa desde el directorio del servicio a HttpException
-    const relativePathHttpException = path.relative(path.dirname(serviceFilePath), httpExceptionImportPath)
+    const relativePathHttpException = path.relative(servicesDir, httpExceptionImportPath)
                                         .split(path.sep).join('/'); // Normaliza a /
 
     // Genera el nombre de la clase de servicio en PascalCase (ej. 'UserProfileService')

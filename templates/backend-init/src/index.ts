@@ -2,7 +2,7 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
-import { HttpException } from './classes/http/exception';
+import { HttpException } from './classes/http/HttpException';
 import { HttpErrorHandler } from './classes/http/error/handler';
 import { ExceptionObject } from './interfaces/interface.server'; // Importar interfaz
 

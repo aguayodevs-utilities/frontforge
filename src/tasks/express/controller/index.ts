@@ -58,10 +58,10 @@ export const createController = async ({
     const serviceImportPath = path.join(projectRoot, 'src', 'services', domain, `${feature}.service`); // Sin .ts para import
 
     // Calcula la ruta relativa desde el directorio del controlador al GenericToken
-    const relativePathGenericToken = path.relative(path.dirname(controllerFilePath), genericTokenImportPath)
+    const relativePathGenericToken = path.relative(controllersDir, genericTokenImportPath)
                                        .split(path.sep).join('/'); // Normaliza a /
     // Calcula la ruta relativa desde el directorio del controlador al Servicio asociado
-    const relativePathService = path.relative(path.dirname(controllerFilePath), serviceImportPath)
+    const relativePathService = path.relative(controllersDir, serviceImportPath)
                                   .split(path.sep).join('/'); // Normaliza a /
 
     // --- 5. Reemplazo de Placeholders ---
