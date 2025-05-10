@@ -11,6 +11,7 @@ import { commandRunner } from '../../utils/commandRunner';
 interface InstallDependenciesOptions {
   projectRoot: string;
   forceInstall?: boolean;
+  withLogger?: boolean; // Nueva opción para incluir logger
 }
 
 // Definición del package.json base con las dependencias necesarias
@@ -20,7 +21,8 @@ const BASE_PACKAGE_JSON = {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "module-alias": "^2.2.3" // Añadir module-alias a dependencias base
     // Añadir más dependencias base si son necesarias
   },
   devDependencies: {
@@ -34,9 +36,14 @@ const BASE_PACKAGE_JSON = {
     "eslint": "^8.57.0",
     "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "jest": "^29.7.0", // Añadir Jest
+    "@types/jest": "^29.5.12", // Añadir tipos de Jest
+    "supertest": "^7.0.0", // Añadir Supertest
+    "@types/supertest": "^6.0.2", // Añadir tipos de Supertest
+    "ts-jest": "^29.1.5" // Añadir ts-jest para usar Jest con TypeScript
      // Añadir más devDependencies base si son necesarias
-  }
+   }
 };
 
 
@@ -52,10 +59,24 @@ const BASE_PACKAGE_JSON = {
  * @param {InstallDependenciesOptions} options - Opciones de instalación.
  * @returns {Promise<void>} - Promesa que se resuelve cuando la instalación finaliza o se omite.
  */
-export async function installDependencies({ projectRoot, forceInstall = false }: InstallDependenciesOptions): Promise<void> {
+export async function installDependencies({ projectRoot, forceInstall = false, withLogger = false }: InstallDependenciesOptions): Promise<void> {
   const nodeModulesPath = path.join(projectRoot, 'node_modules');
 
+  // Dependencias y devDependencies base
+  const baseDeps: Record<string, string> = { ...BASE_PACKAGE_JSON.dependencies };
+  const baseDevDeps: Record<string, string> = { ...BASE_PACKAGE_JSON.devDependencies };
+
+  // Añadir dependencias del logger si la opción está activada
+  if (withLogger) {
+    console.log('   ℹ️  Incluyendo dependencias para logging estructurado (Pino).');
+    baseDeps['pino'] = '^9.2.0'; // Usar una versión reciente
+    baseDeps['pino-http'] = 'latest'; // Añadir pino-http (última versión)
+    baseDevDeps['@types/pino'] = 'latest'; // Usar una versión reciente compatible
+    baseDevDeps['@types/pino-http'] = 'latest'; // Añadir tipos para pino-http (última versión)
+  }
+
   // Verificar si node_modules ya existe y no se fuerza la instalación
+
   if (!forceInstall && await fs.pathExists(nodeModulesPath)) {
       console.log(`   ℹ️  Directorio node_modules ya existe. Omitiendo instalación de dependencias (usa --force si es necesario).`);
       return;
@@ -63,13 +84,13 @@ export async function installDependencies({ projectRoot, forceInstall = false }:
 
   console.log('   -> Instalando dependencias base del backend (puede tardar)...');
   try {
-    // Obtener listas de dependencias desde la configuración base interna
-    const depsToInstall = Object.keys(BASE_PACKAGE_JSON.dependencies || {});
-    const devDepsToInstall = Object.keys(BASE_PACKAGE_JSON.devDependencies || {});
+    // Obtener listas de dependencias a instalar (base + condicionales) *después* de añadir las condicionales
+    const depsToInstall = Object.keys(baseDeps);
+    const devDepsToInstall = Object.keys(baseDevDeps);
 
     let installedSomething = false;
 
-    // Instalar dependencias de producción base
+    // Instalar dependencias de producción
     if (depsToInstall.length > 0) {
       console.log(`      -> Instalando dependencias: ${depsToInstall.join(', ')}`);
       await commandRunner('npm', ['install', ...depsToInstall], { cwd: projectRoot, stdio: 'inherit' });

@@ -1,14 +1,25 @@
+// Registrar aliases de módulos definidos en tsconfig.json
+import 'module-alias/register';
+ 
 import express, { Express, Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
+// Importaciones usando alias de ejemplo:
+// import { HttpException } from '@src/classes/http/HttpException';
+// import { HttpErrorHandler } from '@src/classes/http/error/handler';
+// import { ExceptionObject } from '@src/interfaces/interface.server'; // Importar interfaz
+// Por ahora, mantenemos las rutas relativas para compatibilidad con la plantilla base
 import { HttpException } from './classes/http/HttpException';
 import { HttpErrorHandler } from './classes/http/error/handler';
 import { ExceptionObject } from './interfaces/interface.server'; // Importar interfaz
-
+ 
 // Cargar variables de entorno desde .env (si existe)
+// Para usar archivos .env.<environment> (ej. .env.staging, .env.production),
+// puedes pasar la opción 'path' a dotenv.config() basada en process.env.NODE_ENV.
+// Ejemplo: dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 dotenv.config();
-
+ 
 const app: Express = express();
 const port = process.env.PORT || 3000; // Usar variable de entorno PORT o 3000 por defecto
 
@@ -28,9 +39,16 @@ console.log(`ℹ️  Sirviendo archivos estáticos desde: ${staticPath}`); // Ba
 app.use(express.static(staticPath));
 
 // --- Rutas de API ---
-app.get('/api/health', (req: Request, res: Response) => {
-  // Endpoint básico para verificar que la API está viva
-  res.status(200).json({ status: 'ok', message: 'API Backend funcionando!' });
+// Endpoints de Health y Readiness para orquestadores (ej. Kubernetes)
+app.get('/healthz', (req: Request, res: Response) => {
+  // Endpoint de Health: Indica si la aplicación está viva
+  res.status(200).json({ status: 'ok', message: 'API Backend is healthy' });
+});
+
+app.get('/readyz', (req: Request, res: Response) => {
+  // Endpoint de Readiness: Indica si la aplicación está lista para manejar tráfico
+  // TODO: Implementar lógica de readiness real (ej. conexión a DB, otros servicios)
+  res.status(200).json({ status: 'ok', message: 'API Backend is ready' });
 });
 
 // --- Importar y Usar Routers de Dominios ---

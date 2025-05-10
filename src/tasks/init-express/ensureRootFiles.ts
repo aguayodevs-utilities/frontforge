@@ -11,6 +11,7 @@ const BASE_PACKAGE_JSON = {
     start: "node dist/index.js",
     build: "tsc",
     dev: "cross-env NODE_ENV=local nodemon src/index.ts",
+    test: "jest", // Añadir script de test
     lint: "eslint src/**/*.ts",
     format: "eslint src/**/*.ts --fix"
   },
@@ -51,7 +52,12 @@ const BASE_TSCONFIG_JSON = {
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "baseUrl": "./", // Necesario para resolver paths
+    "paths": {
+      "@src/*": ["src/*"] // Ejemplo de alias para la carpeta src
+      // Añadir otros aliases comunes aquí (ej. "@config/*": ["src/config/*"])
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]

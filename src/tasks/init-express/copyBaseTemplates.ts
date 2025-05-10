@@ -46,9 +46,19 @@ export async function copyBaseTemplates(projectRoot: string): Promise<void> {
       throw new Error(`Directorio de plantillas base no encontrado: ${templateSourceDir}`);
     }
 
-    await templateCopier(templateSourceDir, destinationSrcDir);
+    // Leer el contenido del directorio de plantillas
+    const templateItems = await fs.readdir(templateSourceDir);
 
-    console.log('   ✅ Archivos base copiados exitosamente.');
+    // Copiar cada elemento (archivo o directorio) excepto index.ts
+    for (const item of templateItems) {
+        if (item !== 'index.ts') { // Excluir index.ts
+            const sourcePath = path.join(templateSourceDir, item);
+            const destPath = path.join(destinationSrcDir, item);
+            await fs.copy(sourcePath, destPath); // Copiar recursivamente directorios y archivos
+        }
+    }
+
+    console.log('   ✅ Archivos base (excepto index.ts) copiados exitosamente.');
 
   } catch (error: any) {
     console.error(`   ❌ Error al copiar plantillas base a ${destinationSrcDir}:`, error.message);
