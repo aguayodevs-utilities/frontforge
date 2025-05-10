@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 import yargs, { ArgumentsCamelCase } from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { createFrontend } from './features/createFrontend';
+import fs from 'fs-extra';
+import path from 'node:path';
+import { createFrontendPreact } from './features/createFrontend'; // Será renombrado
 import { buildAll }       from './features/buildAll';
-import { initProject }    from './features/initProject'; // Importar nueva feature
+import { initProject }    from './features/initProject';
+import { createController } from './tasks/express/controller';
+import { createService } from './tasks/express/service';
 
-/**
- * @interface CreateArgs
- * Argumentos esperados para el comando 'create'.
- * Extiende ArgumentsCamelCase de yargs.
- * @property {string} path - La ruta combinada de dominio y feature (ej. 'admin/reports').
- * @property {number} port - El puerto para el servidor de desarrollo del micro-frontend.
- */
+const CONFIG_DIR_NAME = '.frontforge';
+const PROJECT_CONFIG_FILE_NAME = 'config.json';
+interface ProjectConfig {
+  backendType: 'express' | 'docker' | string;
+}
+
 interface CreateArgs extends ArgumentsCamelCase {
-  path: string;
-  port: number;
+  type: 'preact' | 'service' | 'controller'; // Tipos más específicos
+  name: string;
+  port?: number;
 }
 
 /**
@@ -29,44 +33,77 @@ interface InitArgs extends ArgumentsCamelCase {
 
 
 yargs(hideBin(process.argv))
-  /**
-   * Comando para crear un nuevo micro-frontend.
-   * Uso: frontforge create <dominio/feature> [--port <numero>]
-   * @param {string} path - Ruta combinada dominio/feature. Requerido.
-   * @param {number} [port=5173] - Puerto para el servidor de desarrollo. Opcional.
-   */
   .command<CreateArgs>(
-    'create <path>',
-    'Genera un nuevo micro-frontend Preact y los stubs de backend Express asociados.',
+    'create <type> <name>',
+    'Crea un nuevo artefacto (frontend Preact, servicio Express, controlador Express).',
     (y) =>
       y
-        .positional('path', {
-          describe: 'Ruta combinada dominio/feature (ej. admin/reports)',
+        .positional('type', {
+          describe: "Tipo de artefacto a crear ('preact', 'service', 'controller')",
+          type: 'string',
+          choices: ['preact', 'service', 'controller'] as const, // Asegurar tipos
+          demandOption: true,
+        })
+        .positional('name', {
+          describe: "Nombre/ruta del artefacto (ej. 'admin/reports' para preact, 'users/auth' para service/controller)",
           type: 'string',
           demandOption: true,
         })
         .option('port', {
           alias: 'p',
           type: 'number',
-          describe: 'Puerto para el servidor de desarrollo',
-          default: 5173,
+          describe: 'Puerto para el servidor de desarrollo (solo para type=\'preact\')',
         }),
-    /**
-     * Handler para el comando 'create'.
-     * Valida el formato del path, extrae dominio y feature, y llama a createFrontend.
-     * @param {CreateArgs} argv - Argumentos parseados por yargs.
-     */
-    (argv) => {
-      const pathParts = argv.path.split('/');
-      if (pathParts.length < 2 || pathParts.some(part => !part)) {
-        console.error('❌ Formato de path inválido. Se requiere: dominio/feature (ej. admin/reports)');
+    async (argv) => {
+      const { type, name } = argv;
+      const port = argv.port;
+
+      const nameParts = name.split('/');
+      if (nameParts.length < 1 || nameParts.some(part => !part)) { // Permitir un solo segmento para nombres simples si el dominio es la raíz
+        console.error(`❌ Formato de nombre/ruta inválido para '${name}'. Se requiere: [dominio/]/nombre (ej. admin/reports o solo reports).`);
         process.exit(1);
       }
-      const featureName = pathParts.pop()!;
-      const domainPath = pathParts.join('/');
+      
+      const featureName = nameParts.pop()!;
+      const domainPath = nameParts.join('/') || '.'; // Usar '.' si no hay dominio explícito
 
-      console.log("-> Ejecutando createFrontend con:", { domainPath, featureName, port: argv.port });
-      createFrontend(domainPath, featureName, argv);
+      const repoRoot = process.cwd();
+      const projectConfigPath = path.join(repoRoot, CONFIG_DIR_NAME, PROJECT_CONFIG_FILE_NAME);
+      let projectConfig: ProjectConfig = { backendType: 'unknown' };
+
+      try {
+        if (await fs.pathExists(projectConfigPath)) {
+          projectConfig = await fs.readJson(projectConfigPath) as ProjectConfig;
+        } else {
+          console.warn(`⚠️  Archivo de configuración del proyecto (${projectConfigPath}) no encontrado. Para 'service' o 'controller', se asumirá que no es Express si no se encuentra.`);
+        }
+      } catch (error: any) {
+        console.warn(`⚠️  Error al leer ${PROJECT_CONFIG_FILE_NAME}: ${error.message}.`);
+      }
+
+      if (type === 'preact') {
+        const finalPort = port || 5173;
+        console.log("-> Ejecutando createFrontendPreact con:", { domainPath, featureName, port: finalPort, type });
+        await createFrontendPreact(domainPath, featureName, { ...argv, port: finalPort });
+      } else if (type === 'service') {
+        if (projectConfig.backendType === 'express') {
+          console.log("-> Ejecutando createService para Express con:", { domainPath, featureName, type });
+          await createService({ domain: domainPath, feature: featureName });
+        } else {
+          console.error(`❌ No se puede crear un servicio. El tipo de backend del proyecto no es 'express' (actual: ${projectConfig.backendType}).`);
+          console.log(`   Asegúrate de haber ejecutado 'frontforge init' y seleccionado 'Node.js (Express Backend)' o que tu .frontforge/config.json lo refleje.`);
+          process.exit(1);
+        }
+      } else if (type === 'controller') {
+        if (projectConfig.backendType === 'express') {
+          console.log("-> Ejecutando createController para Express con:", { domainPath, featureName, type });
+          await createController({ domain: domainPath, feature: featureName });
+        } else {
+          console.error(`❌ No se puede crear un controlador. El tipo de backend del proyecto no es 'express' (actual: ${projectConfig.backendType}).`);
+          console.log(`   Asegúrate de haber ejecutado 'frontforge init' y seleccionado 'Node.js (Express Backend)' o que tu .frontforge/config.json lo refleje.`);
+          process.exit(1);
+        }
+      }
     }
   )
   /**

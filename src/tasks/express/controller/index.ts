@@ -17,17 +17,18 @@ import { MethodClass } from './MethodClass';
  * @param {TmethodTypeController} [options.methodType='front'] - Tipo de método principal a generar.
  * @returns {void} - No devuelve valor, escribe el archivo directamente o loguea errores.
  */
-export const createController = ({
+export const createController = async ({
   domain,
   feature,
   constructorType = 'byRole',
   methodType = 'front', // Actualmente MethodClass solo soporta 'front'
-}: IcreateController): void => {
+}: IcreateController): Promise<void> => {
   try {
     // --- 1. Definición de Rutas ---
     const projectRoot   = process.cwd(); // Raíz del proyecto donde se ejecuta el comando npx
     const controllersDir = path.join(projectRoot, 'src', 'controllers', domain); // Directorio de destino
     const controllerFilePath = path.join(controllersDir, `${feature}.controller.ts`); // Archivo de destino
+    const controllersConfigPath = path.join(projectRoot, '.frontforge', 'express', 'controllers.json');
 
     // Ruta a la plantilla base del controlador dentro de este paquete
     const controllerTplPath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'controller', 'controller.ts.tpl');
@@ -37,9 +38,6 @@ export const createController = ({
       // Podría ser un warning en lugar de un error si se desea permitir la sobreescritura o actualización
       console.warn(`⚠️  El controlador "${feature}" ya existe en "${controllersDir}". Omitiendo creación.`);
       return; // Salir si ya existe
-      // throw new Error(
-      //   `El controlador "${feature}" ya existe en el dominio "${domain}".`,
-      // );
     }
 
     // --- 3. Generación de Código Interno ---
@@ -80,6 +78,20 @@ export const createController = ({
     fs.ensureDirSync(controllersDir);
     // Escribe el contenido procesado en el archivo del controlador
     fs.writeFileSync(controllerFilePath, controllerContent);
+
+    // Leer el archivo de configuración de controladores
+    const controllers = await fs.readJson(controllersConfigPath) as any[];
+
+    // Añadir la información del nuevo controlador
+    controllers.push({
+      domain,
+      feature,
+      path: controllerFilePath,
+    });
+
+    // Escribir la configuración actualizada
+    await fs.writeJson(controllersConfigPath, controllers, { spaces: 2 });
+
     console.log(`✅ Controller generado: ${controllerFilePath}`);
 
   } catch (error: any) {

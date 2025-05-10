@@ -14,7 +14,8 @@ const DIRS_TO_CREATE: string[] = [
   'src/types',
   // 'config', // Eliminado, ahora se maneja .frontforge/
   'src/routes',
-  'public'
+  'public',
+  '.frontforge/express' // Asegurar el directorio para los archivos de configuración de
 ];
 
 /**
@@ -35,7 +36,13 @@ export async function createDirectoryStructure(projectRoot: string): Promise<voi
       await fs.ensureDir(dirPath);
       // console.log(`      Ensured: ${dir}`); // Log opcional más detallado
     }
-    console.log('   ✅ Estructura de directorios creada/asegurada.');
+
+    // Crear archivos de configuración de servicios y controladores
+    const servicesConfigPath = path.join(projectRoot, '.frontforge', 'express', 'services.json');
+    const controllersConfigPath = path.join(projectRoot, '.frontforge', 'express', 'controllers.json');
+    await fs.writeJson(servicesConfigPath, [], { spaces: 2 });
+    await fs.writeJson(controllersConfigPath, [], { spaces: 2 });
+    console.log('   ✅ Estructura de directorios y archivos de configuración creada/asegurada.');
   } catch (error: any) {
     console.error(`   ❌ Error al crear directorios en ${projectRoot}:`, error.message);
     throw error; // Relanzar para detener el proceso principal

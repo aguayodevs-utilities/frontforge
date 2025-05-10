@@ -18,17 +18,18 @@ import { pascalCase } from 'change-case'; // Usar para generar nombre de servici
  * @param {TmethodTypeService} [options.methodType='front'] - Tipo de método principal a generar.
  * @returns {void} - No devuelve valor, escribe el archivo directamente o loguea errores.
  */
-export const createService = ({
+export const createService = async ({
   domain,
   feature,
   constructorType = 'default',
   methodType = 'front', // Actualmente MethodClass solo soporta 'front'
-}: IcreateService): void => {
+}: IcreateService): Promise<void> => {
   try {
     // --- 1. Definición de Rutas ---
     const projectRoot   = process.cwd(); // Raíz del proyecto donde se ejecuta el comando npx
     const servicesDir    = path.join(projectRoot, 'src', 'services', domain); // Directorio de destino
     const serviceFilePath = path.join(servicesDir, `${feature}.service.ts`); // Archivo de destino
+    const servicesConfigPath = path.join(projectRoot, '.frontforge', 'express', 'services.json');
 
     // Ruta a la plantilla base del servicio dentro de este paquete
     const serviceTplPath = path.join(__dirname, '..', '..', '..', 'templates', 'backend', 'service', 'service.ts.tpl');
@@ -83,6 +84,20 @@ export const createService = ({
     fs.ensureDirSync(servicesDir);
     // Escribe el contenido procesado en el archivo del servicio
     fs.writeFileSync(serviceFilePath, serviceContent);
+
+    // Leer el archivo de configuración de servicios
+    const services = await fs.readJson(servicesConfigPath) as any[];
+
+    // Añadir la información del nuevo servicio
+    services.push({
+      domain,
+      feature,
+      path: serviceFilePath,
+    });
+
+    // Escribir la configuración actualizada
+    await fs.writeJson(servicesConfigPath, services, { spaces: 2 });
+
     console.log(`✅ Service generado: ${serviceFilePath}`);
 
   } catch (error: any) {

@@ -27,6 +27,18 @@ export async function templateCopier(srcRoot: string, destRoot: string): Promise
       return; // Terminar si la fuente no existe
     }
 
+    // Listar contenido del directorio de origen para depuración
+    try {
+      const sourceContents = await fs.readdir(srcRoot);
+      console.log(`[templateCopier] Contenido de ${srcRoot}:`, sourceContents);
+      if (sourceContents.length === 0) {
+        console.warn(`[templateCopier] ADVERTENCIA: El directorio de origen ${srcRoot} está vacío.`);
+      }
+    } catch (readdirError: any) {
+      console.error(`[templateCopier] Error al leer el contenido de ${srcRoot}:`, readdirError.message);
+      // Decidir si continuar o lanzar error aquí también
+    }
+
     // Realizar la copia recursiva. fs.copy maneja la creación del directorio destino si no existe.
     // Por defecto, sobrescribe archivos existentes en el destino.
     // Se podrían añadir opciones a fs.copy si se necesita un comportamiento diferente (ej. { overwrite: false, errorOnExist: true })

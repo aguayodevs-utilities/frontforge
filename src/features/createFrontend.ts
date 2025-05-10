@@ -41,7 +41,7 @@ interface ProjectConfig {
  * @param {object} argv - Argumentos de la línea de comandos.
  * @returns {Promise<void>}
  */
-export async function createFrontend(
+export async function createFrontendPreact(
   domain: string,
   feature: string,
   argv: any 
