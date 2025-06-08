@@ -1,0 +1,19 @@
+{
+  "servers": [
+    {
+      "name": "local_fs",
+      "transport": { "type": "stdio" },
+      "tools": ["read_file", "write_file", "search_files"]
+    },
+    {
+      "name": "shell",
+      "transport": { "type": "stdio" },
+      "tools": ["run_shell"]
+    },
+    {
+      "name": "http",
+      "transport": { "type": "stdio" },
+      "tools": ["http_request", "open_url"]
+    }
+  ]
+}
