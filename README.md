@@ -10,7 +10,7 @@ Herramienta CLI y librería Node.js diseñada para **optimizar el desarrollo de 
     *   **Node.js (Express)**: Establece una estructura de directorios estándar, incluye clases de utilidad esenciales (manejo de tokens, validación, saneamiento, excepciones HTTP, manejo de errores), archivos de configuración clave (`package.json`, `tsconfig.json`, `.env`, `.gitignore`) y archivos de configuración específicos para Express (`controllers.json`, `services.json`). Permite incluir opcionalmente middleware de logging estructurado (Pino).
     *   **Docker (Servidor de Estáticos con Nginx)**: Genera archivos `Dockerfile`, `docker-compose.yml` y una configuración base de Nginx (`default.conf`) para servir micro-frontends estáticos.
 *   **Generación Rápida de Artefactos**: Permite la creación ágil de:
-    *   **Micro-frontends Preact**: Genera la estructura completa de un nuevo micro-frontend Preact con Vite, incluyendo configuración automática de rutas de compilación, scripts de desarrollo y build, e integración con una librería de componentes compartidos (`@aguayodevs-utilities/preact-shared`).
+    *   **Micro-frontends Preact**: Genera la estructura completa de un nuevo micro-frontend Preact con Vite, incluyendo configuración automática de rutas de compilación, scripts de desarrollo y build, e integración con una librería de componentes compartidos (`@aguayodevs-utilities/preact-shared@^1.0.4`).
     *   **Stubs de Backend Express**: Crea archivos básicos de Controlador y Servicio Express dentro de la estructura de backend inicializada, siguiendo convenciones de dominio/característica. **Genera automáticamente archivos de test básicos** para estos stubs (usando Jest y Supertest).
 *   **Configuración Automatizada**:
     *   Configura automáticamente `vite.config.ts` en los micro-frontends generados para alinearse con la estructura de monorepositorio (rutas `base` y `outDir`).
@@ -240,6 +240,10 @@ Las contribuciones son bienvenidas. Sigue estos pasos para contribuir:
 6.  **Commit y Etiqueta**: Realiza un commit de tus cambios y crea una etiqueta Git con la nueva versión (ej. `git tag vX.Y.Z`).
 7.  **Push**: Sube tus commits y la etiqueta al repositorio remoto (ej. `git push origin main --tags`).
 8.  **Publicación**: Publica el paquete en npm ejecutando `npm run publish-frontforge`. Este script se encarga de instalar dependencias, compilar y publicar con acceso público.
+
+## 📜 Historial de Cambios
+
+Consulta el [CHANGELOG.md](CHANGELOG.md) para un historial detallado de las versiones y cambios.
 
 ---
 

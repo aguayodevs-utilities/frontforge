@@ -6,7 +6,7 @@
     "rootDir": "src",
     "module": "commonjs",
     "target": "es2020",
-    "lib": ["es2020", "dom", "node"],
+    "lib": ["es2020", "dom"],
     "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
